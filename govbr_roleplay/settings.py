@@ -42,8 +42,7 @@ ALLOWED_HOSTS.extend([
     '*'  # Temporário para debug no DisCloud
 ])
 
-# Debug temporário para verificar ALLOWED_HOSTS
-print(f"🔧 DEBUG: ALLOWED_HOSTS = {ALLOWED_HOSTS}")
+# ALLOWED_HOSTS configurados para DisCloud
 
 
 # Application definition
@@ -192,6 +191,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+]
+
+# CSRF settings - necessário para DisCloud
+CSRF_TRUSTED_ORIGINS = [
+    'https://gov.discloud.app',
+    'https://gov-fixed.discloud.app',
+    'https://govbr-fixed-v2.discloud.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000'
 ]
 
 # Custom User Model
