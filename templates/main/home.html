@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ config_site.nome_site }} - Página Inicial{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+<link rel="stylesheet" href="{% static 'css/noticias.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Slide de Notícias do Governo em Destaque -->
+{% if noticias_governo_destaque %}
+<section class="hero-section">
+    <div class="container">
+        <div class="section-header text-center mb-4">
+            <h2 class="section-title">Notícias Oficiais do Governo</h2>
+            <p class="section-subtitle">Últimas notícias e comunicados oficiais</p>
+        </div>
+        <div class="swiper hero-swiper">
+            <div class="swiper-wrapper">
+                {% for noticia in noticias_governo_destaque %}
+                <div class="swiper-slide">
+                    <div class="hero-card" {% if noticia.imagem_principal %}style="background-image: url('{{ noticia.imagem_principal.url }}')"{% endif %}>
+                        <div class="hero-content">
+                            <span class="hero-category">{{ noticia.get_nome_orgao|default:"Governo Federal" }}</span>
+                            <h2 class="hero-title">{{ noticia.titulo }}</h2>
+                            <p class="hero-description">{{ noticia.resumo }}</p>
+                            <div class="hero-meta">
+                                <span class="hero-date">
+                                    <i class="fas fa-calendar"></i>
+                                    {{ noticia.data_publicacao|date:"d/m/Y" }}
+                                </span>
+                                <span class="hero-views">
+                                    <i class="fas fa-eye"></i>
+                                    {{ noticia.visualizacoes }} visualizações
+                                </span>
+                            </div>
+                            <button class="btn-read-more" onclick="lerNoticia('{{ noticia.slug }}')">
+                                Ler mais <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Notícias Recentes do Governo -->
+{% if noticias_recentes %}
+<section class="news-section">
+    <div class="container">
+        <div class="section-header d-flex justify-content-between align-items-center">
+            <div>
+            <h2 class="section-title">Notícias Recentes</h2>
+            <p class="section-subtitle">Fique por dentro das últimas notícias do governo</p>
+            </div>
+            <div>
+                <a href="{% url 'main:noticia_lista' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-newspaper me-2"></i>Ver Todas as Notícias
+                </a>
+            </div>
+        </div>
+        
+        <div class="row">
+            {% for noticia in noticias_recentes %}
+            <div class="col-md-3 mb-4">
+                <div class="news-card" onclick="lerNoticia('{{ noticia.slug }}')">
+                    {% if noticia.imagem_principal %}
+                    <div class="news-image">
+                        <img src="{% static 'images/placeholder.svg' %}" 
+                             data-src="{{ noticia.imagem_principal.url }}" 
+                             alt="{{ noticia.titulo }}" 
+                             class="img-fluid lazy">
+                    </div>
+                    {% endif %}
+                    <div class="news-content">
+                        <div class="news-header">
+                            {% if noticia.get_logo_orgao %}
+                            <img src="{{ noticia.get_logo_orgao }}" alt="{{ noticia.get_nome_orgao }}" class="news-orgao-logo">
+                            {% endif %}
+                            <div class="news-orgao-info">
+                                <span class="news-category">{{ noticia.get_nome_orgao }}</span>
+                                <span class="news-author">Por {{ noticia.autor.nome_completo_rp }}</span>
+                            </div>
+                        </div>
+                        <h3 class="news-title">{{ noticia.titulo }}</h3>
+                        <p class="news-excerpt">{{ noticia.resumo|truncatewords:15 }}</p>
+                        <div class="news-meta">
+                            <span class="news-date">
+                                <i class="fas fa-calendar"></i>
+                                {{ noticia.data_publicacao|date:"d/m/Y H:i" }}
+                            </span>
+                            <span class="news-views">
+                                <i class="fas fa-eye"></i>
+                                {{ noticia.visualizacoes }} views
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Estatísticas do Sistema -->
+{% if estatisticas %}
+<section class="stats-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2 class="section-title">Estatísticas do Sistema</h2>
+            <p class="section-subtitle">Dados atualizados do nosso roleplay</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number" data-count="{{ estatisticas.total_usuarios }}">0</h3>
+                        <p class="stat-label">Usuários Cadastrados</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number" data-count="{{ estatisticas.total_imigrantes }}">0</h3>
+                        <p class="stat-label">Imigrantes</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number" data-count="{{ estatisticas.total_cidadaos }}">0</h3>
+                        <p class="stat-label">Cidadãos</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number" data-count="{{ estatisticas.usuarios_ultimos_7_dias }}">0</h3>
+                        <p class="stat-label">Novos (7 dias)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Botões Configuráveis -->
+{% if botoes_configuravel %}
+<section class="services-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2 class="section-title">Serviços para você</h2>
+            <p class="section-subtitle">Encontre o serviço ou a informação desejada pelas opções abaixo:</p>
+        </div>
+        
+        <div class="row">
+            {% for botao in botoes_configuravel %}
+            <div class="col-md-4 col-sm-6 mb-4">
+                <a href="{{ botao.link }}" class="service-card" data-bs-toggle="tooltip" title="{{ botao.descricao }}">
+                    <div class="service-icon" style="background-color: {{ botao.cor_fundo }};">
+                        <i class="{{ botao.icone }}"></i>
+                    </div>
+                    <div class="service-content">
+                        <h3 class="service-title">{{ botao.titulo }}</h3>
+                        <p class="service-description">{{ botao.descricao }}</p>
+                    </div>
+                    <div class="service-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Discord Section -->
+{% if config_site.link_discord %}
+<section class="discord-section">
+    <div class="container">
+        <div class="discord-card">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="discord-content">
+                        <div class="discord-icon">
+                            <i class="fab fa-discord"></i>
+                        </div>
+                        <div class="discord-text">
+                            <h3>{{ config_site.mensagem_discord }}</h3>
+                            <p>Participe da nossa comunidade no Discord e interaja com outros cidadãos do roleplay.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{{ config_site.link_discord }}" class="btn-discord" target="_blank">
+                        <i class="fab fa-discord"></i> Entrar no Discord
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Anúncios -->
+{% if anuncios %}
+<section class="ads-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2 class="section-title">Anúncios</h2>
+        </div>
+        
+        <div class="row">
+            {% for anuncio in anuncios %}
+            <div class="col-md-6 mb-4">
+                <div class="ad-card">
+                    {% if anuncio.imagem %}
+                    <div class="ad-image">
+                        <img src="{{ anuncio.imagem.url }}" alt="{{ anuncio.titulo }}" class="img-fluid">
+                    </div>
+                    {% endif %}
+                    <div class="ad-content">
+                        <h3 class="ad-title">{{ anuncio.titulo }}</h3>
+                        <p class="ad-description">{{ anuncio.descricao }}</p>
+                        {% if anuncio.link %}
+                        <a href="{{ anuncio.link }}" class="btn-ad" target="_blank">
+                            Saiba mais <i class="fas fa-arrow-right"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/noticias.js' %}"></script>
+{% endblock %} 

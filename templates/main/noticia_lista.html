@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notícias - {{ config_site.nome_site }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .noticia-card {
+        height: 100%;
+        transition: transform 0.2s;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .noticia-card:hover {
+        transform: translateY(-5px);
+        color: inherit;
+    }
+    
+    .noticia-imagem {
+        height: 200px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+    
+    .noticia-meta {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .filtro-categoria {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        margin: 0.25rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .filtro-categoria:hover {
+        transform: translateY(-2px);
+    }
+    
+    .filtro-categoria.ativo {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .filtro-tag {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        margin: 0.25rem;
+        border-radius: 2rem;
+        font-size: 0.875rem;
+        text-decoration: none;
+        background-color: #f8f9fa;
+        transition: all 0.2s;
+    }
+    
+    .filtro-tag:hover {
+        background-color: #e9ecef;
+    }
+    
+    .filtro-tag.ativo {
+        background-color: #0d6efd;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Notícias</h2>
+            <p class="text-muted">Fique por dentro das últimas notícias do governo e da imprensa.</p>
+        </div>
+        {% if perms.main.add_noticia %}
+        <div class="col-auto">
+            <a href="{% url 'main:noticia_criar' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Nova Notícia
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" id="filtrosForm">
+                <!-- Busca -->
+                <div class="row mb-4">
+                    <div class="col">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control" name="q" value="{{ q }}" 
+                                   placeholder="Buscar notícias...">
+                            <button type="submit" class="btn btn-primary">Buscar</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tipo -->
+                <div class="mb-4">
+                    <h6 class="mb-3">Tipo de Notícia</h6>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="tipo" id="tipo_todos" value=""
+                               {% if not tipo_selecionado %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="tipo_todos">Todos</label>
+                        
+                        <input type="radio" class="btn-check" name="tipo" id="tipo_governo" value="governo"
+                               {% if tipo_selecionado == 'governo' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="tipo_governo">Governo</label>
+                        
+                        <input type="radio" class="btn-check" name="tipo" id="tipo_imprensa" value="imprensa"
+                               {% if tipo_selecionado == 'imprensa' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="tipo_imprensa">Imprensa</label>
+                    </div>
+                </div>
+                
+                <!-- Categorias -->
+                {% if categorias %}
+                <div class="mb-4">
+                    <h6 class="mb-3">Categorias</h6>
+                    <div class="categorias-filtro">
+                        {% for categoria in categorias %}
+                        <a href="?{% if q %}q={{ q }}&{% endif %}{% if tipo_selecionado %}tipo={{ tipo_selecionado }}&{% endif %}categoria={{ categoria.slug }}"
+                           class="filtro-categoria {% if categoria.slug == categoria_selecionada %}ativo{% endif %}"
+                           style="background-color: {{ categoria.cor }}20; color: {{ categoria.cor }};">
+                            {% if categoria.icone %}
+                            <i class="{{ categoria.icone }} me-2"></i>
+                            {% endif %}
+                            {{ categoria.nome }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Tags -->
+                {% if tags %}
+                <div>
+                    <h6 class="mb-3">Tags</h6>
+                    <div class="tags-filtro">
+                        {% for tag in tags %}
+                        <a href="?{% if q %}q={{ q }}&{% endif %}{% if tipo_selecionado %}tipo={{ tipo_selecionado }}&{% endif %}tag={{ tag.slug }}"
+                           class="filtro-tag {% if tag.slug == tag_selecionada %}ativo{% endif %}">
+                            #{{ tag.nome }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    
+    <!-- Lista de Notícias -->
+    {% if noticias %}
+    <div class="row">
+        {% for noticia in noticias %}
+        <div class="col-md-4 mb-4">
+            <a href="{% url 'main:noticia_detalhe' noticia.slug %}" class="card noticia-card shadow-sm">
+                {% if noticia.imagem_principal %}
+                <div class="noticia-imagem" style="background-image: url('{{ noticia.imagem_principal.url }}');"></div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-primary">{{ noticia.get_tipo_display }}</span>
+                        <small class="noticia-meta">{{ noticia.data_publicacao|date:"d/m/Y" }}</small>
+                    </div>
+                    <h5 class="card-title mb-2">{{ noticia.titulo }}</h5>
+                    <p class="card-text text-muted">{{ noticia.resumo|truncatewords:20 }}</p>
+                    <div class="noticia-meta mt-3">
+                        <span><i class="fas fa-user me-1"></i>{{ noticia.autor.get_full_name|default:noticia.autor.username }}</span>
+                        <span class="mx-2">•</span>
+                        <span><i class="fas fa-eye me-1"></i>{{ noticia.visualizacoes }}</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Paginação -->
+    {% if noticias.has_other_pages %}
+    <nav aria-label="Navegação de páginas" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if noticias.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ noticias.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tag_selecionada %}&tag={{ tag_selecionada }}{% endif %}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in noticias.paginator.page_range %}
+            {% if noticias.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > noticias.number|add:'-3' and num < noticias.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tag_selecionada %}&tag={{ tag_selecionada }}{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if noticias.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ noticias.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tag_selecionada %}&tag={{ tag_selecionada }}{% endif %}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+        <h4>Nenhuma notícia encontrada</h4>
+        <p class="text-muted">Tente ajustar os filtros de busca.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Atualizar formulário ao mudar tipo
+    document.querySelectorAll('input[name="tipo"]').forEach(input => {
+        input.addEventListener('change', () => {
+            document.getElementById('filtrosForm').submit();
+        });
+    });
+</script>
+{% endblock %} 

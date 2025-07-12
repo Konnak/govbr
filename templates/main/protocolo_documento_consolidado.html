@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Documento Consolidado - Protocolo {{ protocolo.numero_protocolo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+    .no-print { display: none !important; }
+    .container { max-width: none !important; }
+    body { font-size: 12px; }
+}
+
+.documento-consolidado {
+    background: white;
+    padding: 40px;
+    margin: 20px 0;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.cabecalho-oficial {
+    text-align: center;
+    border-bottom: 3px solid #0066cc;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.titulo-documento {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #0066cc;
+    margin-bottom: 10px;
+}
+
+.subtitulo-documento {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.numero-protocolo {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #dc3545;
+    margin-top: 15px;
+}
+
+.secao {
+    margin-bottom: 30px;
+    page-break-inside: avoid;
+}
+
+.secao-titulo {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0066cc;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.info-protocolo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    margin-bottom: 10px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+    display: inline-block;
+    min-width: 120px;
+}
+
+.info-value {
+    color: #333;
+}
+
+.detalhamento-box {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 15px 0;
+    line-height: 1.6;
+}
+
+.documento-item {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #fff;
+}
+
+.documento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.documento-nome {
+    font-weight: 600;
+    color: #333;
+    font-size: 1rem;
+}
+
+.documento-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.assinaturas-lista {
+    margin-top: 10px;
+}
+
+.assinatura-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 5px;
+    margin-bottom: 3px;
+}
+
+.status-pendente { background: #fff3cd; color: #856404; }
+.status-aceita { background: #d4edda; color: #155724; }
+.status-recusada { background: #f8d7da; color: #721c24; }
+
+.encaminhamento-item {
+    border-left: 4px solid #0066cc;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #f8f9fa;
+}
+
+.encaminhamento-header {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.encaminhamento-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.encaminhamento-parecer {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    padding: 10px;
+    font-style: italic;
+}
+
+.interessado-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.interessado-item:last-child {
+    border-bottom: none;
+}
+
+.interessado-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.rodape-documento {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="no-print mb-3">
+        <a href="{% url 'main:protocolo_detalhe' protocolo.numero_protocolo %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar ao Protocolo
+        </a>
+        <a href="{% url 'main:protocolo_documento_consolidado_pdf' protocolo.numero_protocolo %}" class="btn btn-success ms-2">
+                                        <i class="fas fa-file-pdf"></i> Baixar Documento Consolidado
+        </a>
+        <button onclick="window.print()" class="btn btn-primary ms-2">
+            <i class="fas fa-print"></i> Imprimir Documento
+        </button>
+    </div>
+
+    <div class="documento-consolidado">
+        <!-- Cabeçalho Oficial -->
+        <div class="cabecalho-oficial">
+            <div class="titulo-documento">GOVERNO BRASILEIRO ROLEPLAY</div>
+            <div class="subtitulo-documento">DOCUMENTO CONSOLIDADO DE PROTOCOLO</div>
+            <div class="numero-protocolo">{{ protocolo.numero_protocolo }}</div>
+        </div>
+
+        <!-- Informações Básicas do Protocolo -->
+        <div class="secao">
+            <h3 class="secao-titulo">📋 INFORMAÇÕES DO PROTOCOLO</h3>
+            
+            <div class="info-protocolo">
+                <div>
+                    <div class="info-item">
+                        <span class="info-label">Assunto:</span>
+                        <span class="info-value">{{ protocolo.assunto }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Espécie:</span>
+                        <span class="info-value">{{ protocolo.especie_documento.nome }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Data Cadastro:</span>
+                        <span class="info-value">{{ protocolo.data_cadastro|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value">{{ protocolo.get_status_display }}</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="info-item">
+                        <span class="info-label">Usuário:</span>
+                        <span class="info-value">{{ protocolo.usuario_cadastro.nome_completo_rp }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Órgão:</span>
+                        <span class="info-value">{{ protocolo.orgao_cadastro.nome|default:"Cidadão" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Setor:</span>
+                        <span class="info-value">{{ protocolo.entidade_cadastro.nome|default:"N/A" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Urgência:</span>
+                        <span class="info-value">{% if protocolo.urgencia == 'sim' %}SIM{% else %}NÃO{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detalhamento-box">
+                <strong>Detalhamento:</strong><br>
+                {{ protocolo.detalhamento|linebreaks }}
+            </div>
+        </div>
+
+        <!-- Destinatário -->
+        <div class="secao">
+            <h3 class="secao-titulo">📍 DESTINATÁRIO</h3>
+            <div class="info-item">
+                <span class="info-label">Órgão:</span>
+                <span class="info-value">{{ protocolo.orgao_destinatario.nome }}</span>
+            </div>
+            {% if protocolo.entidade_destinatario %}
+            <div class="info-item">
+                <span class="info-label">Setor:</span>
+                <span class="info-value">{{ protocolo.entidade_destinatario.nome }}</span>
+            </div>
+            {% endif %}
+            {% if protocolo.usuario_destinatario %}
+            <div class="info-item">
+                <span class="info-label">Usuário:</span>
+                <span class="info-value">{{ protocolo.usuario_destinatario.nome_completo_rp }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Documentos Anexados -->
+        {% if documentos %}
+        <div class="secao">
+            <h3 class="secao-titulo">📁 DOCUMENTOS ANEXADOS ({{ documentos|length }})</h3>
+            
+            {% for documento in documentos %}
+            <div class="documento-item">
+                <div class="documento-header">
+                    <div class="documento-nome">
+                        {{ documento.identificador|default:forloop.counter }}. {{ documento.nome }}
+                        {% if documento.assinado %}
+                            <span style="color: #28a745; font-weight: 600;">✓ ASSINADO</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="documento-meta">
+                    <strong>Tipo:</strong> {{ documento.get_tipo_display }} | 
+                    <strong>Upload por:</strong> {{ documento.usuario_upload.nome_completo_rp }} | 
+                    <strong>Data:</strong> {{ documento.data_upload|date:"d/m/Y H:i" }}
+                </div>
+
+                {% if documento.assinado %}
+                <div class="documento-meta">
+                    <strong>Assinado por:</strong> {{ documento.usuario_assinatura.nome_completo_rp }} | 
+                    <strong>Data Assinatura:</strong> {{ documento.data_assinatura|date:"d/m/Y H:i" }}
+                    {% if documento.observacoes_assinatura %}
+                        <br><strong>Observações:</strong> {{ documento.observacoes_assinatura }}
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Status das Solicitações de Assinatura -->
+                {% if documento.solicitacoes_assinatura.all %}
+                <div class="assinaturas-lista">
+                    <strong>Solicitações de Assinatura:</strong><br>
+                    {% for solicitacao in documento.solicitacoes_assinatura.all %}
+                        <span class="assinatura-status status-{{ solicitacao.status }}">
+                            {% if solicitacao.status == 'pendente' %}
+                                ⏳ {{ solicitacao.usuario_destinatario.nome_completo_rp }} - Pendente
+                            {% elif solicitacao.status == 'aceita' %}
+                                ✓ {{ solicitacao.usuario_destinatario.nome_completo_rp }} - Assinado em {{ solicitacao.data_resposta|date:"d/m/Y H:i" }}
+                            {% elif solicitacao.status == 'recusada' %}
+                                ✗ {{ solicitacao.usuario_destinatario.nome_completo_rp }} - Rejeitado em {{ solicitacao.data_resposta|date:"d/m/Y H:i" }}
+                                {% if solicitacao.motivo_recusa %}
+                                    <br><small>Motivo: {{ solicitacao.motivo_recusa }}</small>
+                                {% endif %}
+                            {% endif %}
+                        </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Interessados -->
+        {% if interessados %}
+        <div class="secao">
+            <h3 class="secao-titulo">👥 INTERESSADOS ({{ interessados|length }})</h3>
+            {% for interessado in interessados %}
+            <div class="interessado-item">
+                <div class="interessado-avatar">
+                    {{ interessado.usuario.nome_completo_rp|first|upper }}
+                </div>
+                <div>
+                    <strong>{{ interessado.usuario.nome_completo_rp }}</strong><br>
+                    <small>{{ interessado.orgao.nome|default:"Cidadão" }}{% if interessado.entidade %} - {{ interessado.entidade.nome }}{% endif %}</small><br>
+                    <small>Incluído em {{ interessado.data_inclusao|date:"d/m/Y H:i" }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Histórico de Encaminhamentos -->
+        {% if encaminhamentos %}
+        <div class="secao">
+            <h3 class="secao-titulo">🔄 HISTÓRICO DE ENCAMINHAMENTOS ({{ encaminhamentos|length }})</h3>
+            
+            {% for encaminhamento in encaminhamentos %}
+            <div class="encaminhamento-item">
+                <div class="encaminhamento-header">
+                    {{ forloop.counter }}. {{ encaminhamento.usuario_origem.nome_completo_rp }} → 
+                    {{ encaminhamento.orgao_destino.nome }}{% if encaminhamento.entidade_destino %} - {{ encaminhamento.entidade_destino.nome }}{% endif %}{% if encaminhamento.usuario_destino %} - {{ encaminhamento.usuario_destino.nome_completo_rp }}{% endif %}
+                </div>
+                <div class="encaminhamento-meta">
+                    <strong>Data:</strong> {{ encaminhamento.data_encaminhamento|date:"d/m/Y H:i" }}
+                </div>
+                <div class="encaminhamento-parecer">
+                    <strong>Parecer:</strong> {{ encaminhamento.parecer }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Rodapé -->
+        <div class="rodape-documento">
+            <div>Documento gerado automaticamente pelo Sistema de Protocolos</div>
+            <div>Data de Geração: {{ data_geracao|date:"d/m/Y H:i" }}</div>
+            <div>Usuário: {{ user.nome_completo_rp }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

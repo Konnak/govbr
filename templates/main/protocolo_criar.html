@@ -1,0 +1,706 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Criar Protocolo - GovBR Roleplay{% endblock %}
+
+{% block extra_head %}
+<style>
+.criar-protocolo {
+    padding: 2rem 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 80vh;
+}
+
+.form-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.section-title {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+}
+
+.section-title i {
+    margin-right: 0.5rem;
+    color: #007bff;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+.urgencia-info {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+.urgencia-info h6 {
+    color: #856404;
+    margin-bottom: 0.5rem;
+}
+
+.urgencia-info ul {
+    margin-bottom: 0;
+    color: #856404;
+}
+
+.restricao-info {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+.restricao-info h6 {
+    color: #0c5460;
+    margin-bottom: 0.5rem;
+}
+
+.restricao-info .restriction-option {
+    margin-bottom: 0.5rem;
+    color: #0c5460;
+}
+
+.char-counter {
+    font-size: 0.875rem;
+    color: #6c757d;
+    text-align: right;
+    margin-top: 0.25rem;
+}
+
+.char-counter.warning {
+    color: #ffc107;
+}
+
+.char-counter.danger {
+    color: #dc3545;
+}
+
+.file-upload-area {
+    border: 2px dashed #ced4da;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-area:hover {
+    border-color: #007bff;
+    background: #e3f2fd;
+}
+
+.file-upload-area.dragover {
+    border-color: #007bff;
+    background: #e3f2fd;
+}
+
+.file-list {
+    margin-top: 1rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: between;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.file-item .file-name {
+    flex-grow: 1;
+    margin-left: 0.5rem;
+}
+
+.file-item .file-size {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-left: 0.5rem;
+}
+
+.btn-remove-file {
+    background: none;
+    border: none;
+    color: #dc3545;
+    padding: 0.25rem;
+    border-radius: 4px;
+}
+
+.btn-remove-file:hover {
+    background: #f5c6cb;
+}
+
+.interessados-container {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.interessado-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+}
+
+.interessado-item:last-child {
+    margin-bottom: 0;
+}
+
+.btn-action {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 2rem;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+}
+
+.btn-secondary-action {
+    background: #6c757d;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 2rem;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary-action:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.2);
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="criar-protocolo">
+    <div class="container">
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Criar Novo Protocolo
+                </h1>
+                <p class="text-muted">Preencha as informações para criar um novo protocolo</p>
+            </div>
+            <a href="{% url 'main:protocolos_home' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+
+        <form id="protocoloForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="form-card">
+                        <!-- Informações Básicas -->
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-info-circle"></i>
+                                Informações Básicas
+                            </h3>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="especie_documento" class="form-label">Espécie de Documento *</label>
+                                        <select class="form-select" id="especie_documento" name="especie_documento" required>
+                                            <option value="">Selecione a espécie</option>
+                                            {% for especie in especies_documento %}
+                                                <option value="{{ especie.id }}">{{ especie.nome }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="urgencia" class="form-label">Urgência *</label>
+                                        <select class="form-select" id="urgencia" name="urgencia" required>
+                                            <option value="nao">Não</option>
+                                            <option value="sim">Sim</option>
+                                        </select>
+                                        <div class="urgencia-info" id="urgenciaInfo" style="display: none;">
+                                            <h6><i class="fas fa-exclamation-triangle"></i> Situações Urgentes:</h6>
+                                            <ul>
+                                                <li>Recrutamentos</li>
+                                                <li>Ordens Judiciais</li>
+                                                <li>Mandados de Segurança</li>
+                                                <li>Situações de risco iminente</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="assunto" class="form-label">Assunto *</label>
+                                <input type="text" class="form-control" id="assunto" name="assunto" 
+                                       placeholder="Digite o assunto do protocolo" maxlength="200" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="detalhamento" class="form-label">Detalhamento *</label>
+                                <textarea class="form-control" id="detalhamento" name="detalhamento" rows="6" 
+                                          placeholder="Descreva detalhadamente o protocolo (máximo 2.400 caracteres)" 
+                                          maxlength="2400" required></textarea>
+                                <div class="char-counter" id="charCounter">0 / 2.400 caracteres</div>
+                            </div>
+                        </div>
+
+                        <!-- Origem (Cadastro) -->
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-user-circle"></i>
+                                Origem do Protocolo
+                            </h3>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Órgão de Cadastro</label>
+                                        <input type="text" class="form-control" 
+                                               value="{{ user_orgaos.0.nome|default:'Cidadão' }}" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Setor de Cadastro</label>
+                                        <input type="text" class="form-control" 
+                                               value="{{ user_entidades.0.nome|default:'Cidadão' }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Destino -->
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-paper-plane"></i>
+                                Destino do Protocolo
+                            </h3>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="orgao_destinatario" class="form-label">Órgão Destinatário *</label>
+                                        <select class="form-select" id="orgao_destinatario" name="orgao_destinatario" required>
+                                            <option value="">Selecione o órgão</option>
+                                            {% for orgao in orgaos %}
+                                                <option value="{{ orgao.id }}">{{ orgao.poder.nome }} - {{ orgao.nome }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="entidade_destinatario" class="form-label">Setor Destinatário</label>
+                                        <select class="form-select" id="entidade_destinatario" name="entidade_destinatario">
+                                            <option value="">Selecione primeiro o órgão</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="usuario_destinatario" class="form-label">Destinatário Específico (Opcional)</label>
+                                <select class="form-select" id="usuario_destinatario" name="usuario_destinatario">
+                                    <option value="">Selecione primeiro o setor</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    Deixe em branco para enviar para todo o órgão/setor
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Configurações -->
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-cog"></i>
+                                Configurações de Acesso
+                            </h3>
+                            
+                            <div class="mb-3">
+                                <label for="restricao_acesso" class="form-label">Restrição de Acesso *</label>
+                                <select class="form-select" id="restricao_acesso" name="restricao_acesso" required>
+                                    <option value="publico">Público</option>
+                                    <option value="restrito">Restrito</option>
+                                    <option value="sigiloso">Sigiloso</option>
+                                </select>
+                                <div class="restricao-info">
+                                    <h6><i class="fas fa-info-circle"></i> Níveis de Acesso:</h6>
+                                    <div class="restriction-option">
+                                        <strong>Público:</strong> Todos podem consultar o protocolo
+                                    </div>
+                                    <div class="restriction-option">
+                                        <strong>Restrito:</strong> Apenas membros dos órgãos de origem e destino
+                                    </div>
+                                    <div class="restriction-option">
+                                        <strong>Sigiloso:</strong> Apenas pessoas específicas cadastradas como interessadas
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="monitorar" name="monitorar">
+                                <label class="form-check-label" for="monitorar">
+                                    <i class="fas fa-star"></i>
+                                    Monitorar este protocolo
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    O protocolo aparecerá na sua lista de protocolos monitorados
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Interessados -->
+                    <div class="form-card">
+                        <h3 class="section-title">
+                            <i class="fas fa-users"></i>
+                            Interessados
+                        </h3>
+                        
+                        <div class="mb-3">
+                            <label for="buscar_interessado" class="form-label">Buscar Usuário</label>
+                            <input type="text" class="form-control" id="buscar_interessado" 
+                                   placeholder="Digite o nome do usuário">
+                        </div>
+                        
+                        <div class="interessados-container" id="interessadosContainer">
+                            <p class="text-muted text-center">Nenhum interessado adicionado</p>
+                        </div>
+                    </div>
+
+                    <!-- Documentos -->
+                    <div class="form-card">
+                        <h3 class="section-title">
+                            <i class="fas fa-file-pdf"></i>
+                            Documentos (PDF)
+                        </h3>
+                        
+                        <div class="file-upload-area" id="documentosUpload">
+                            <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                            <p class="mb-2">Clique ou arraste arquivos PDF aqui</p>
+                            <small class="text-muted">Apenas arquivos PDF são aceitos</small>
+                            <input type="file" id="documentos" name="documentos" multiple accept=".pdf" style="display: none;">
+                        </div>
+                        <div class="file-list" id="documentosList"></div>
+                    </div>
+
+                    <!-- Anexos -->
+                    <div class="form-card">
+                        <h3 class="section-title">
+                            <i class="fas fa-paperclip"></i>
+                            Anexos
+                        </h3>
+                        
+                        <div class="file-upload-area" id="anexosUpload">
+                            <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                            <p class="mb-2">Clique ou arraste arquivos aqui</p>
+                            <small class="text-muted">Imagens, documentos, etc.</small>
+                            <input type="file" id="anexos" name="anexos" multiple style="display: none;">
+                        </div>
+                        <div class="file-list" id="anexosList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="form-card">
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn-secondary-action" id="btnLimpar">
+                        <i class="fas fa-eraser"></i>
+                        Limpar Tudo
+                    </button>
+                    
+                    <button type="submit" class="btn-action" id="btnEnviar">
+                        <i class="fas fa-paper-plane"></i>
+                        Enviar Protocolo
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h5>Criando protocolo...</h5>
+        <p class="text-muted">Por favor, aguarde</p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos
+    const urgenciaSelect = document.getElementById('urgencia');
+    const urgenciaInfo = document.getElementById('urgenciaInfo');
+    const detalhamentoTextarea = document.getElementById('detalhamento');
+    const charCounter = document.getElementById('charCounter');
+    const orgaoSelect = document.getElementById('orgao_destinatario');
+    const entidadeSelect = document.getElementById('entidade_destinatario');
+    const usuarioSelect = document.getElementById('usuario_destinatario');
+    const protocoloForm = document.getElementById('protocoloForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const btnLimpar = document.getElementById('btnLimpar');
+    
+    // Mostrar/ocultar informações de urgência
+    urgenciaSelect.addEventListener('change', function() {
+        if (this.value === 'sim') {
+            urgenciaInfo.style.display = 'block';
+        } else {
+            urgenciaInfo.style.display = 'none';
+        }
+    });
+    
+    // Contador de caracteres
+    detalhamentoTextarea.addEventListener('input', function() {
+        const count = this.value.length;
+        const max = 2400;
+        charCounter.textContent = `${count} / ${max} caracteres`;
+        
+        if (count > max * 0.9) {
+            charCounter.classList.add('warning');
+        } else {
+            charCounter.classList.remove('warning');
+        }
+        
+        if (count >= max) {
+            charCounter.classList.add('danger');
+        } else {
+            charCounter.classList.remove('danger');
+        }
+    });
+    
+    // Carregar entidades quando órgão for selecionado
+    orgaoSelect.addEventListener('change', function() {
+        const orgaoId = this.value;
+        entidadeSelect.innerHTML = '<option value="">Carregando...</option>';
+        usuarioSelect.innerHTML = '<option value="">Selecione primeiro o setor</option>';
+        
+        if (orgaoId) {
+            fetch(`/api/protocolos/entidades/${orgaoId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    entidadeSelect.innerHTML = '<option value="">Selecione o setor (opcional)</option>';
+                    data.entidades.forEach(entidade => {
+                        entidadeSelect.innerHTML += `<option value="${entidade.id}">${entidade.nome}</option>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar entidades:', error);
+                    entidadeSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+                });
+        } else {
+            entidadeSelect.innerHTML = '<option value="">Selecione primeiro o órgão</option>';
+        }
+    });
+    
+    // Carregar usuários quando entidade for selecionada
+    entidadeSelect.addEventListener('change', function() {
+        const entidadeId = this.value;
+        usuarioSelect.innerHTML = '<option value="">Carregando...</option>';
+        
+        if (entidadeId) {
+            fetch(`/api/protocolos/usuarios/${entidadeId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    usuarioSelect.innerHTML = '<option value="">Selecione o usuário (opcional)</option>';
+                    data.usuarios.forEach(usuario => {
+                        usuarioSelect.innerHTML += `<option value="${usuario.id}">${usuario.nome} - ${usuario.cargo}</option>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar usuários:', error);
+                    usuarioSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+                });
+        } else {
+            usuarioSelect.innerHTML = '<option value="">Selecione primeiro o setor</option>';
+        }
+    });
+    
+    // Submissão do formulário
+    protocoloForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        loadingOverlay.style.display = 'flex';
+        
+        // Simular delay para mostrar loading
+        setTimeout(() => {
+            this.submit();
+        }, 500);
+    });
+    
+    // Botão limpar
+    btnLimpar.addEventListener('click', function() {
+        if (confirm('Tem certeza que deseja limpar todos os campos?')) {
+            protocoloForm.reset();
+            charCounter.textContent = '0 / 2.400 caracteres';
+            charCounter.classList.remove('warning', 'danger');
+            urgenciaInfo.style.display = 'none';
+            entidadeSelect.innerHTML = '<option value="">Selecione primeiro o órgão</option>';
+            usuarioSelect.innerHTML = '<option value="">Selecione primeiro o setor</option>';
+        }
+    });
+    
+    // File upload handlers
+    setupFileUpload('documentosUpload', 'documentos', 'documentosList', '.pdf');
+    setupFileUpload('anexosUpload', 'anexos', 'anexosList', '');
+    
+    function setupFileUpload(uploadAreaId, inputId, listId, accept) {
+        const uploadArea = document.getElementById(uploadAreaId);
+        const input = document.getElementById(inputId);
+        const list = document.getElementById(listId);
+        
+        uploadArea.addEventListener('click', () => input.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files);
+            if (accept) {
+                const filteredFiles = files.filter(file => file.name.toLowerCase().endsWith(accept));
+                updateFileList(filteredFiles, list);
+            } else {
+                updateFileList(files, list);
+            }
+        });
+        
+        input.addEventListener('change', (e) => {
+            updateFileList(Array.from(e.target.files), list);
+        });
+    }
+    
+    function updateFileList(files, listElement) {
+        listElement.innerHTML = '';
+        files.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <i class="fas fa-file"></i>
+                <span class="file-name">${file.name}</span>
+                <span class="file-size">${formatFileSize(file.size)}</span>
+                <button type="button" class="btn-remove-file" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            listElement.appendChild(fileItem);
+        });
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+});
+</script>
+{% endblock %} 

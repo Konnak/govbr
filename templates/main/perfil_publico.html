@@ -1,0 +1,668 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ usuario.nome_completo_rp }} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .avatar-large {
+        width: 120px;
+        height: 120px;
+        border: 3px solid rgba(255,255,255,0.5);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .cargo-atual-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+        padding: 0.5rem 1.2rem;
+        border-radius: 25px;
+        margin-bottom: 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+    }
+
+    .cargo-atual-badge.badge-warning {
+        background: rgba(255, 193, 7, 0.2);
+        border-color: rgba(255, 193, 7, 0.3);
+        color: #fff;
+    }
+
+    .cargo-atual-badge.badge-success {
+        background: rgba(40, 167, 69, 0.2);
+        border-color: rgba(40, 167, 69, 0.3);
+        color: #fff;
+    }
+
+    .cargo-atual-badge.badge-info {
+        background: rgba(23, 162, 184, 0.2);
+        border-color: rgba(23, 162, 184, 0.3);
+        color: #fff;
+    }
+
+    .cargo-atual-badge.badge-light {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: #fff;
+    }
+
+    .cargo-atual-badge:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .simbolo-icon {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .historico-item {
+        border-left: 3px solid #dee2e6;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        background: white;
+        border-radius: 0 10px 10px 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .historico-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .historico-item.atual {
+        border-left-color: #28a745;
+        background: #f8fff9;
+    }
+    
+    .historico-item::before {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 1.2rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #dee2e6;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px #dee2e6;
+    }
+    
+    .historico-item.atual::before {
+        background: #28a745;
+        box-shadow: 0 0 0 2px #28a745;
+    }
+    
+    .info-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    .discord-info {
+        background: linear-gradient(135deg, #7289da 0%, #5865f2 100%);
+        color: white;
+    }
+    
+    .roblox-info {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        color: #212529;
+    }
+    
+    .roblox-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        border: 2px solid rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        object-fit: cover;
+    }
+    
+    .roblox-description {
+        background: rgba(0,0,0,0.05);
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #1a237e, #283593);
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .stats-item {
+        text-align: center;
+        padding: 1.2rem;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .stats-item.cargos::before { background: linear-gradient(90deg, #4CAF50, #81C784); }
+    .stats-item.tempo::before { background: linear-gradient(90deg, #2196F3, #64B5F6); }
+    .stats-item.orgaos::before { background: linear-gradient(90deg, #9C27B0, #BA68C8); }
+    .stats-item.gestao::before { background: linear-gradient(90deg, #F44336, #E57373); }
+
+    .stats-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+    }
+
+    .stats-item.cargos .stats-icon {
+        background: rgba(76, 175, 80, 0.1);
+        color: #4CAF50;
+    }
+
+    .stats-item.tempo .stats-icon {
+        background: rgba(33, 150, 243, 0.1);
+        color: #2196F3;
+    }
+
+    .stats-item.orgaos .stats-icon {
+        background: rgba(156, 39, 176, 0.1);
+        color: #9C27B0;
+    }
+
+    .stats-item.gestao .stats-icon {
+        background: rgba(244, 67, 54, 0.1);
+        color: #F44336;
+    }
+
+    .stats-number {
+        font-size: 2.2rem;
+        font-weight: bold;
+        line-height: 1.2;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-item.cargos .stats-number { color: #2E7D32; }
+    .stats-item.tempo .stats-number { color: #1565C0; }
+    .stats-item.orgaos .stats-number { color: #6A1B9A; }
+    .stats-item.gestao .stats-number { color: #C62828; }
+
+    .stats-label {
+        color: #424242;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-small {
+        font-size: 0.85rem;
+        color: #757575;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        margin-top: 0.5rem;
+    }
+
+    .stats-streak {
+        background: rgba(255, 193, 7, 0.1);
+        color: #FFA000;
+        padding: 0.5rem;
+        border-radius: 8px;
+        margin-top: 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .stats-streak i {
+        color: #FFB300;
+    }
+    
+    .user-info {
+        background: rgba(255,255,255,0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        margin: 0.5rem 0;
+    }
+    
+    .user-info i {
+        width: 20px;
+        text-align: center;
+        margin-right: 0.5rem;
+    }
+    
+    .roblox-avatar-container {
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        position: relative;
+    }
+    
+    .roblox-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        border: 2px solid rgba(255,255,255,0.3);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        object-fit: cover;
+        display: block;
+    }
+
+    .btn-light {
+        background: rgba(255,255,255,0.9);
+        border: none;
+        transition: all 0.2s ease;
+        color: #212529;
+    }
+
+    .btn-light:hover {
+        background: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .cargo-atual-container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .cargo-atual-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: #e9ecef;
+    }
+
+    .cargo-atual-header i {
+        font-size: 1.2rem;
+    }
+
+    .cargo-atual-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .cargo-atual-orgao {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .cargo-atual-poder {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-left: 0.5rem;
+        border-left: 2px solid rgba(255, 255, 255, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header do Perfil -->
+    <div class="profile-header">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <img src="{{ usuario.get_avatar_url }}" alt="Avatar" class="rounded-circle avatar-large">
+            </div>
+            <div class="col">
+                <h1 class="mb-2 display-5">{{ usuario.nome_completo_rp }}</h1>
+                <div class="user-info">
+                    <i class="fas fa-user"></i>@{{ usuario.username }}
+                </div>
+                <div class="user-info">
+                    <i class="fas fa-calendar"></i>Membro desde {{ usuario.date_joined|date:"d/m/Y" }}
+                </div>
+                
+                {% if cargo_atual %}
+                <div class="cargo-atual-container">
+                    <div class="cargo-atual-header">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Cargo Atual</span>
+                    </div>
+                    <div class="cargo-atual-info">
+                        <span class="cargo-atual-badge badge-{% if cargo_atual.simbolo_gestao == '**' %}warning{% elif cargo_atual.simbolo_gestao == '*' %}success{% elif cargo_atual.simbolo_gestao == '+' %}info{% else %}light{% endif %}">
+                            <span class="simbolo-icon">{{ cargo_atual.get_simbolo_display_icon }}</span>
+                            {{ cargo_atual.nome }}
+                        </span>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="cargo-atual-orgao">
+                                <i class="fas fa-building"></i>
+                                {{ cargo_atual.entidade.orgao.nome }}
+                            </span>
+                            <span class="cargo-atual-poder">
+                                <i class="fas fa-landmark"></i>
+                                {{ cargo_atual.entidade.orgao.poder.nome }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="mt-4">
+                    <span class="badge bg-secondary cargo-atual-badge">
+                        <i class="fas fa-user me-2"></i>Sem cargo atual
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Informações do Roblox -->
+            <div class="card info-card roblox-info mb-4">
+                <div class="card-body">
+                    <h5 class="card-title d-flex align-items-center justify-content-between mb-3">
+                        <span><i class="fas fa-gamepad me-2"></i>Roblox</span>
+                        <span class="badge bg-success text-white">
+                            <i class="fas fa-check-circle text-white me-1"></i>Verificado
+                        </span>
+                    </h5>
+                    
+                    <!-- Informações Principais -->
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="roblox-avatar-container me-3">
+                            <img src="{{ usuario.get_roblox_avatar_url }}" 
+                                 alt="Roblox Avatar" 
+                                 class="roblox-avatar" 
+                                 onerror="this.src='/static/images/default-avatar.svg'"
+                                 loading="lazy">
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 text-dark">{{ usuario.nome_completo_rp }}</h6>
+                            <div class="text-dark opacity-75 small mb-1">
+                                <i class="fas fa-at me-1"></i>{{ usuario.roblox_username }}
+                            </div>
+                            <div class="text-dark opacity-75 small">
+                                <i class="fas fa-fingerprint me-1"></i>ID: {{ usuario.roblox_id }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descrição -->
+                    {% if usuario.get_roblox_description %}
+                    <div class="roblox-description mb-3">
+                        <h6 class="text-dark opacity-75 mb-2">
+                            <i class="fas fa-quote-left me-2"></i>Sobre
+                        </h6>
+                        <p class="text-dark opacity-75 small mb-0">
+                            {{ usuario.get_roblox_description }}
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Botões de Ação -->
+                    <div class="d-flex gap-2">
+                        <a href="https://www.roblox.com/users/{{ usuario.roblox_id }}/profile" 
+                           target="_blank" 
+                           class="btn btn-light btn-sm">
+                            <i class="fas fa-external-link-alt me-2"></i>Ver Perfil
+                        </a>
+                        <a href="https://www.roblox.com/users/{{ usuario.roblox_id }}/inventory" 
+                           target="_blank" 
+                           class="btn btn-light btn-sm">
+                            <i class="fas fa-box-open me-2"></i>Inventário
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="card info-card mb-4">
+                <div class="card-header bg-white border-bottom-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Estatísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stats-item cargos">
+                            <div class="stats-icon">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div class="stats-number">{{ total_cargos_unicos }}</div>
+                            <div class="stats-label">Cargos Ocupados</div>
+                            {% if cargo_atual %}
+                            <div class="stats-streak">
+                                <i class="fas fa-star me-1"></i>
+                                Cargo atual há {{ cargo_atual.data_inicio|timesince }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="stats-item tempo">
+                            <div class="stats-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stats-number">{{ total_dias_servico|intcomma }}</div>
+                            <div class="stats-label">Dias de Serviço</div>
+                            <div class="stats-small">
+                                <i class="fas fa-calculator me-1"></i>
+                                Média de {{ media_dias_por_cargo|intcomma }} dias por cargo
+                            </div>
+                        </div>
+
+                        <div class="stats-item orgaos">
+                            <div class="stats-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="stats-number">{{ total_orgaos }}</div>
+                            <div class="stats-label">Órgãos Diferentes</div>
+                            <div class="stats-small">
+                                <i class="fas fa-landmark me-1"></i>
+                                Em {{ total_poderes }} {% if total_poderes == 1 %}poder{% else %}poderes{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="stats-item gestao">
+                            <div class="stats-icon">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            <div class="stats-number">{{ total_cargos_gestao }}</div>
+                            <div class="stats-label">Cargos de Gestão</div>
+                            <div class="stats-small">
+                                <i class="fas fa-percentage me-1"></i>
+                                {% if porcentagem_gestao %}{{ porcentagem_gestao }}% do total{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Histórico de Cargos -->
+        <div class="col-md-8">
+            <div class="card info-card">
+                <div class="card-header bg-white border-bottom-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Histórico de Cargos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if historico_cargos %}
+                    <div class="timeline">
+                        {% for historico in historico_cargos %}
+                        <div class="historico-item {% if historico.is_atual %}atual{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-2">
+                                        <span class="simbolo-icon">{{ historico.cargo.get_simbolo_display_icon }}</span>
+                                        {{ historico.cargo.nome }}
+                                        {% if historico.is_atual %}
+                                            <span class="badge bg-success ms-2">Atual</span>
+                                        {% endif %}
+                                    </h6>
+                                    <p class="mb-2 text-muted">
+                                        {{ historico.cargo.entidade.nome }} - {{ historico.cargo.entidade.orgao.nome }}
+                                    </p>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Início: {{ historico.data_inicio|date:"d/m/Y H:i" }}
+                                        {% if historico.data_fim %}
+                                            <br>
+                                            <i class="fas fa-calendar-times me-1"></i>
+                                            Fim: {{ historico.data_fim|date:"d/m/Y H:i" }}
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if historico.nomeado_por %}
+                                    <div class="small text-info mt-2">
+                                        <i class="fas fa-user-plus me-1"></i>
+                                        Nomeado por: {{ historico.nomeado_por.nome_completo_rp }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if historico.exonerado_por %}
+                                    <div class="small text-warning">
+                                        <i class="fas fa-user-minus me-1"></i>
+                                        Exonerado por: {{ historico.exonerado_por.nome_completo_rp }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if historico.observacoes %}
+                                    <div class="small text-muted mt-2">
+                                        <i class="fas fa-comment me-1"></i>
+                                        {{ historico.observacoes }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <span class="badge 
+                                        {% if historico.cargo.simbolo_gestao == '**' %}bg-warning text-dark
+                                        {% elif historico.cargo.simbolo_gestao == '*' %}bg-success
+                                        {% elif historico.cargo.simbolo_gestao == '+' %}bg-info
+                                        {% else %}bg-light text-dark
+                                        {% endif %}">
+                                        {% if historico.cargo.simbolo_gestao != 'nenhum' %}
+                                            {{ historico.cargo.simbolo_gestao }}
+                                        {% else %}
+                                            Operacional
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Nenhum cargo ocupado</h5>
+                        <p class="text-muted">Este usuário ainda não ocupou nenhum cargo no governo.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação suave para os cards
+    const cards = document.querySelectorAll('.info-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Animação para o histórico
+    const historicoItems = document.querySelectorAll('.historico-item');
+    historicoItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(-20px)';
+        
+        setTimeout(() => {
+            item.style.transition = 'all 0.5s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'translateX(0)';
+        }, (index * 100) + 300);
+    });
+});
+</script>
+{% endblock %} 

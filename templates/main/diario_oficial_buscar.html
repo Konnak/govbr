@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Buscar no Diário Oficial - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.search-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.search-form {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #1e3c72;
+    box-shadow: 0 0 0 0.2rem rgba(30, 60, 114, 0.25);
+}
+
+.search-result {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.search-result:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.result-header {
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.result-tipo {
+    display: inline-block;
+    background: #1e3c72;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.result-titulo {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #1e3c72;
+    margin: 0;
+}
+
+.result-diario {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.result-content {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.result-meta {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.highlight {
+    background: yellow;
+    padding: 0.1rem 0.2rem;
+    border-radius: 3px;
+}
+
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1e3c72;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-header">
+    <div class="container">
+        <h1 class="h2 mb-0">🔍 Busca Avançada</h1>
+        <p class="mb-0 opacity-75">Pesquise publicações no Diário Oficial</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Formulário de Busca -->
+    <div class="search-form">
+        <form method="get">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label for="q" class="form-label">Texto da Busca</label>
+                        <input type="text" name="q" id="q" class="form-control" 
+                               value="{{ query }}" placeholder="Digite palavras-chave...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="tipo" class="form-label">Tipo de Publicação</label>
+                        <select name="tipo" id="tipo" class="form-select">
+                            <option value="">Todos os tipos</option>
+                            {% for value, label in tipos_choices %}
+                            <option value="{{ value }}" {% if tipo_selecionado == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="secao" class="form-label">Seção (Poder)</label>
+                        <select name="secao" id="secao" class="form-select">
+                            <option value="">Todas as seções</option>
+                            {% for value, label in secoes_choices %}
+                            <option value="{{ value }}" {% if secao_selecionada == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="data_inicio" class="form-label">Data Inicial</label>
+                        <input type="date" name="data_inicio" id="data_inicio" class="form-control" 
+                               value="{{ data_inicio }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="data_fim" class="form-label">Data Final</label>
+                        <input type="date" name="data_fim" id="data_fim" class="form-control" 
+                               value="{{ data_fim }}">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                <a href="{% url 'main:diario_oficial_buscar' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Limpar
+                </a>
+                <a href="{% url 'main:diario_oficial_lista' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Voltar à Lista
+                </a>
+            </div>
+        </form>
+    </div>
+
+    {% if query or secao_selecionada or tipo_selecionado or data_inicio or data_fim %}
+    <!-- Estatísticas da Busca -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-number">{{ page_obj.paginator.count }}</div>
+            <div class="stat-label">Resultado{{ page_obj.paginator.count|pluralize:",s" }} encontrado{{ page_obj.paginator.count|pluralize:",s" }}</div>
+        </div>
+        {% if query %}
+        <div class="stat-card">
+            <div class="stat-number">{{ page_obj.paginator.num_pages }}</div>
+            <div class="stat-label">Página{{ page_obj.paginator.num_pages|pluralize:",s" }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Resultados -->
+    <div class="results-section">
+        {% for publicacao in page_obj %}
+        <div class="search-result">
+            <div class="result-header">
+                <div class="result-tipo">{{ publicacao.get_tipo_display }}</div>
+                <h3 class="result-titulo">{{ publicacao.titulo }}</h3>
+                <div class="result-diario">
+                    <i class="fas fa-file-alt"></i>
+                    <a href="{% url 'main:diario_oficial_detalhe' publicacao.diario.numero %}" class="text-decoration-none">
+                        D.O. Nº {{ publicacao.diario.numero }}
+                    </a>
+                    | {{ publicacao.diario.data_publicacao|date:"d/m/Y" }}
+                    | {{ publicacao.get_secao_display }}
+                </div>
+            </div>
+            
+            <div class="result-content">
+                {{ publicacao.conteudo|truncatewords:50|linebreaks }}
+            </div>
+            
+            <div class="result-meta">
+                <div>
+                    {% if publicacao.automatica %}
+                    <i class="fas fa-robot text-primary"></i> Automática
+                    {% else %}
+                    <i class="fas fa-user text-success"></i> Manual
+                    {% endif %}
+                    | {{ publicacao.criado_em|date:"d/m/Y H:i" }}
+                </div>
+                <div>
+                    <a href="{% url 'main:diario_oficial_detalhe' publicacao.diario.numero %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> Ver Completo
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">Nenhum resultado encontrado</h4>
+            <p class="text-muted">Tente ajustar os critérios de busca ou verificar a ortografia.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginação -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Paginação dos resultados">
+        <ul class="pagination justify-content-center mt-4">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if secao_selecionada %}&secao={{ secao_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">Primeira</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if secao_selecionada %}&secao={{ secao_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">Anterior</a>
+            </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if secao_selecionada %}&secao={{ secao_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">Próxima</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if secao_selecionada %}&secao={{ secao_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">Última</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+    <!-- Instruções de Busca -->
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">Realize uma busca</h4>
+        <p class="text-muted">Use os filtros acima para encontrar publicações específicas no Diário Oficial.</p>
+        
+        <div class="mt-4">
+            <h6>💡 Dicas de busca:</h6>
+            <ul class="list-unstyled text-muted">
+                <li>• Use palavras-chave específicas para melhores resultados</li>
+                <li>• Combine filtros de tipo e seção para refinar a busca</li>
+                <li>• Use o filtro de data para encontrar publicações de períodos específicos</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

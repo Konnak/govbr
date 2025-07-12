@@ -1,0 +1,745 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestão de Cidadania - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Cores da Bandeira do Brasil */
+    :root {
+        --brasil-verde: #009639;
+        --brasil-amarelo: #FEDF00;
+        --brasil-azul: #002776;
+        --brasil-verde-escuro: #007d30;
+        --brasil-azul-escuro: #001f5c;
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, var(--brasil-verde) 0%, var(--brasil-verde-escuro) 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .card-shadow-hover {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    
+    .card-shadow-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .status-pendente {
+        background: linear-gradient(135deg, var(--brasil-amarelo) 0%, #e6c200 100%);
+        color: #333 !important;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .status-aprovado, .status-aprovada {
+        background: linear-gradient(135deg, var(--brasil-verde) 0%, var(--brasil-verde-escuro) 100%);
+        color: white !important;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .status-rejeitado, .status-rejeitada {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white !important;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .btn-custom-primary {
+        background: linear-gradient(135deg, var(--brasil-azul) 0%, var(--brasil-azul-escuro) 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-custom-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 39, 118, 0.4);
+        color: white;
+    }
+    
+    .btn-custom-success {
+        background: linear-gradient(135deg, var(--brasil-verde) 0%, var(--brasil-verde-escuro) 100%);
+        border: none;
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-custom-success:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(0, 150, 57, 0.4);
+        color: white;
+    }
+    
+    .btn-custom-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-custom-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
+        color: white;
+    }
+    
+    .solicitacao-header {
+        background: linear-gradient(135deg, var(--brasil-azul) 0%, var(--brasil-azul-escuro) 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-bottom: none;
+    }
+    
+    .user-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .user-info h6 {
+        margin-bottom: 0.25rem;
+        font-weight: 700;
+        color: white !important;
+    }
+    
+    .user-info .text-white-50 {
+        font-size: 0.9rem;
+        opacity: 0.85;
+        color: rgba(255, 255, 255, 0.75) !important;
+    }
+    
+    .solicitacao-header .text-white-50.small {
+        font-size: 0.85rem !important;
+        line-height: 1.4;
+    }
+    
+    .solicitacao-header .text-white-50.small div {
+        margin-bottom: 0.25rem;
+    }
+    
+    .solicitacao-header .text-white-50.small div:last-child {
+        margin-bottom: 0;
+    }
+    
+    .info-row {
+        border-bottom: 1px solid #f8f9fa;
+        padding: 0.75rem 0;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9rem;
+    }
+    
+    .btn-group-vertical .btn {
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-group-vertical .btn:last-child {
+        margin-bottom: 0;
+    }
+    
+    .filter-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-flag me-2"></i>
+                        Gestão de Cidadania
+                    </h1>
+                    <p class="text-muted mb-0">Gerencie solicitações de cidadania brasileira</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'main:configurar_cidadania' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-cog me-1"></i>
+                        Configurar Sistema
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card text-center">
+                <div class="card-body">
+                    <div class="stats-number">{{ total_pendentes }}</div>
+                    <div class="stats-label">Pendentes</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center" style="background: linear-gradient(135deg, var(--brasil-verde) 0%, var(--brasil-verde-escuro) 100%); color: white;">
+                <div class="card-body">
+                    <div class="stats-number">{{ total_aprovadas }}</div>
+                    <div class="stats-label">Aprovadas</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white text-center">
+                <div class="card-body">
+                    <div class="stats-number">{{ total_rejeitadas }}</div>
+                    <div class="stats-label">Rejeitadas</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center" style="background: linear-gradient(135deg, var(--brasil-azul) 0%, var(--brasil-azul-escuro) 100%); color: white;">
+                <div class="card-body">
+                    <div class="stats-number">{{ page_obj.paginator.count }}</div>
+                    <div class="stats-label">Total</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card filter-section">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="status" class="form-label">Filtrar por Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">Todos os status</option>
+                                <option value="pendente" {% if status_filter == 'pendente' %}selected{% endif %}>Pendente</option>
+                                <option value="aprovada" {% if status_filter == 'aprovada' %}selected{% endif %}>Aprovada</option>
+                                <option value="rejeitada" {% if status_filter == 'rejeitada' %}selected{% endif %}>Rejeitada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-custom-primary">
+                                <i class="fas fa-filter me-1"></i>
+                                Filtrar
+                            </button>
+                            <a href="{% url 'main:gestao_cidadania' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>
+                                Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Solicitações -->
+    <div class="row">
+        <div class="col-12">
+            {% if page_obj.object_list %}
+                {% for solicitacao in page_obj %}
+                <div class="card card-shadow-hover mb-3">
+                    <div class="card-header solicitacao-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ solicitacao.usuario.get_avatar_url }}" 
+                                     alt="Avatar" 
+                                     class="user-avatar me-3"
+                                     onerror="this.src='/static/images/default-avatar.svg'">
+                                <div class="user-info">
+                                    <h6 class="mb-1 text-white">{{ solicitacao.usuario.nome_completo_rp }}</h6>
+                                    <div class="text-white-50 mb-1">
+                                        <i class="fas fa-user me-1"></i>@{{ solicitacao.usuario.username }}
+                                        <span class="mx-2">•</span>
+                                        <i class="fab fa-roblox me-1"></i>{{ solicitacao.usuario.roblox_username }} ({{ solicitacao.usuario.roblox_id }})
+                                    </div>
+                                    {% if solicitacao.usuario.discord_username %}
+                                    <div class="text-white-50">
+                                        <i class="fab fa-discord me-1"></i>{{ solicitacao.usuario.discord_display_name|default:solicitacao.usuario.discord_username }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="mb-2">
+                                    <span class="badge status-{{ solicitacao.status }}">
+                                        {% if solicitacao.status == 'pendente' %}
+                                            <i class="fas fa-clock me-1"></i>Pendente
+                                        {% elif solicitacao.status == 'aprovada' %}
+                                            <i class="fas fa-check me-1"></i>Aprovada
+                                        {% elif solicitacao.status == 'rejeitada' %}
+                                            <i class="fas fa-times me-1"></i>Rejeitada
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="text-white-50 small">
+                                    <div><i class="fas fa-hashtag me-1"></i>{{ solicitacao.numero_protocolo|default:solicitacao.id }}</div>
+                                    <div><i class="fas fa-calendar me-1"></i>{{ solicitacao.data_solicitacao|date:"d/m/Y H:i" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><span class="info-label">Motivo:</span></div>
+                                    <div class="col-sm-8">{{ solicitacao.motivo|truncatewords:30 }}</div>
+                                </div>
+                                {% if solicitacao.observacoes_staff %}
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><span class="info-label">Observações:</span></div>
+                                    <div class="col-sm-8">{{ solicitacao.observacoes_staff|truncatewords:20 }}</div>
+                                </div>
+                                {% endif %}
+                                {% if solicitacao.data_resposta %}
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><span class="info-label">Data de Resposta:</span></div>
+                                    <div class="col-sm-8">{{ solicitacao.data_resposta|date:"d/m/Y H:i" }}</div>
+                                </div>
+                                {% endif %}
+                                {% if solicitacao.aprovado_por %}
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><span class="info-label">Processado por:</span></div>
+                                    <div class="col-sm-8">{{ solicitacao.aprovado_por.nome_completo_rp }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 text-end">
+                                {% if solicitacao.status == 'pendente' or solicitacao.status == 'em_analise' or solicitacao.status == 'documentos_pendentes' %}
+                                <div class="btn-group-vertical gap-2">
+                                    <button onclick="aprovarCidadania({{ solicitacao.id }}, '{{ solicitacao.usuario.nome_completo_rp }}')" 
+                                            class="btn btn-custom-success btn-sm">
+                                        <i class="fas fa-check me-1"></i>
+                                        Aprovar
+                                    </button>
+                                    <button onclick="rejeitarCidadania({{ solicitacao.id }}, '{{ solicitacao.usuario.nome_completo_rp }}')" 
+                                            class="btn btn-custom-danger btn-sm">
+                                        <i class="fas fa-times me-1"></i>
+                                        Rejeitar
+                                    </button>
+                                    <button onclick="verDetalhes({{ solicitacao.id }})" 
+                                            class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>
+                                        Detalhes
+                                    </button>
+                                </div>
+                                {% else %}
+                                <button onclick="verDetalhes({{ solicitacao.id }})" 
+                                        class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>
+                                    Ver Detalhes
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Nenhuma solicitação encontrada</h5>
+                        <p class="text-muted">Não há solicitações de cidadania com os filtros aplicados.</p>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Paginação -->
+                {% if page_obj.has_other_pages %}
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Navegação da página">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhuma solicitação encontrada</h5>
+                    <p class="text-muted">Ainda não há solicitações de cidadania no sistema.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal Aprovar -->
+<div class="modal fade" id="modalAprovar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--brasil-verde) 0%, var(--brasil-verde-escuro) 100%); color: white;">
+                <h5 class="modal-title">
+                    <i class="fas fa-check me-2"></i>
+                    Aprovar Solicitação de Cidadania
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja aprovar a solicitação de cidadania de <strong id="nomeUsuarioAprovar"></strong>?</p>
+                <div class="mb-3">
+                    <label for="observacoesAprovar" class="form-label">Observações (opcional)</label>
+                    <textarea class="form-control" id="observacoesAprovar" rows="3" 
+                              placeholder="Adicione observações sobre a aprovação..."></textarea>
+                </div>
+                <div class="alert" style="background-color: rgba(0, 150, 57, 0.1); border: 1px solid var(--brasil-verde); color: var(--brasil-verde-escuro);">
+                    <i class="fas fa-info-circle me-2"></i>
+                    O usuário receberá status de cidadão após a aprovação.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-custom-success" onclick="confirmarAprovacao()">
+                    <i class="fas fa-check me-1"></i>
+                    Confirmar Aprovação
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Rejeitar -->
+<div class="modal fade" id="modalRejeitar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-times me-2"></i>
+                    Rejeitar Solicitação de Cidadania
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja rejeitar a solicitação de cidadania de <strong id="nomeUsuarioRejeitar"></strong>?</p>
+                <div class="mb-3">
+                    <label for="observacoesRejeitar" class="form-label">Motivo da rejeição <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="observacoesRejeitar" rows="3" 
+                              placeholder="Explique o motivo da rejeição..." required></textarea>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    O usuário poderá fazer uma nova solicitação após a rejeição.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-custom-danger" onclick="confirmarRejeicao()">
+                    <i class="fas fa-times me-1"></i>
+                    Confirmar Rejeição
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Variáveis globais
+window.solicitacaoAtual = null;
+
+// Função para aprovar cidadania
+window.aprovarCidadania = function(id, nome) {
+    console.log('Aprovando cidadania:', id, nome);
+    window.solicitacaoAtual = id;
+    document.getElementById('nomeUsuarioAprovar').textContent = nome;
+    document.getElementById('observacoesAprovar').value = '';
+    new bootstrap.Modal(document.getElementById('modalAprovar')).show();
+};
+
+// Função para rejeitar cidadania
+window.rejeitarCidadania = function(id, nome) {
+    console.log('Rejeitando cidadania:', id, nome);
+    window.solicitacaoAtual = id;
+    document.getElementById('nomeUsuarioRejeitar').textContent = nome;
+    document.getElementById('observacoesRejeitar').value = '';
+    new bootstrap.Modal(document.getElementById('modalRejeitar')).show();
+};
+
+// Função para ver detalhes
+window.verDetalhes = function(id) {
+    console.log('Vendo detalhes da solicitação:', id);
+    if (typeof NotificationManager !== 'undefined') {
+        NotificationManager.show('Funcionalidade em desenvolvimento', 'info');
+    } else {
+        alert('Funcionalidade em desenvolvimento');
+    }
+};
+
+// Função para confirmar aprovação
+window.confirmarAprovacao = function() {
+    if (!window.solicitacaoAtual) {
+        console.error('Nenhuma solicitação selecionada');
+        return;
+    }
+    
+    console.log('Confirmando aprovação para solicitação:', window.solicitacaoAtual);
+    const observacoes = document.getElementById('observacoesAprovar').value.trim();
+    
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+        console.error('Token CSRF não encontrado');
+        alert('Erro: Token CSRF não encontrado. Recarregue a página.');
+        return;
+    }
+    
+    fetch(`/api/cidadania/aprovar/${window.solicitacaoAtual}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            observacoes: observacoes
+        })
+    })
+    .then(response => {
+        console.log('Resposta da aprovação:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Dados da resposta:', data);
+        if (data.success) {
+            if (typeof NotificationManager !== 'undefined') {
+                NotificationManager.showFormSuccess(data.message);
+            } else {
+                alert(data.message);
+            }
+            bootstrap.Modal.getInstance(document.getElementById('modalAprovar')).hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            if (typeof NotificationManager !== 'undefined') {
+                NotificationManager.showFormError(data.error);
+            } else {
+                alert('Erro: ' + data.error);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Erro na aprovação:', error);
+        if (typeof NotificationManager !== 'undefined') {
+            NotificationManager.showConnectionError();
+        } else {
+            alert('Erro de conexão. Tente novamente.');
+        }
+    });
+};
+
+// Função para confirmar rejeição
+window.confirmarRejeicao = function() {
+    if (!window.solicitacaoAtual) {
+        console.error('Nenhuma solicitação selecionada');
+        return;
+    }
+    
+    console.log('Confirmando rejeição para solicitação:', window.solicitacaoAtual);
+    const observacoes = document.getElementById('observacoesRejeitar').value.trim();
+    
+    if (!observacoes) {
+        if (typeof NotificationManager !== 'undefined') {
+            NotificationManager.showFormError('O motivo da rejeição é obrigatório');
+        } else {
+            alert('O motivo da rejeição é obrigatório');
+        }
+        return;
+    }
+    
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+        console.error('Token CSRF não encontrado');
+        alert('Erro: Token CSRF não encontrado. Recarregue a página.');
+        return;
+    }
+    
+    fetch(`/api/cidadania/rejeitar/${window.solicitacaoAtual}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            observacoes: observacoes
+        })
+    })
+    .then(response => {
+        console.log('Resposta da rejeição:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Dados da resposta:', data);
+        if (data.success) {
+            if (typeof NotificationManager !== 'undefined') {
+                NotificationManager.showFormSuccess(data.message);
+            } else {
+                alert(data.message);
+            }
+            bootstrap.Modal.getInstance(document.getElementById('modalRejeitar')).hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            if (typeof NotificationManager !== 'undefined') {
+                NotificationManager.showFormError(data.error);
+            } else {
+                alert('Erro: ' + data.error);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Erro na rejeição:', error);
+        if (typeof NotificationManager !== 'undefined') {
+            NotificationManager.showConnectionError();
+        } else {
+            alert('Erro de conexão. Tente novamente.');
+        }
+    });
+};
+
+// Função para obter token CSRF
+function getCsrfToken() {
+    let token = null;
+    
+    // 1. Buscar por name="csrfmiddlewaretoken"
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfInput) {
+        token = csrfInput.value;
+    }
+    
+    // 2. Buscar em meta tag se não encontrou
+    if (!token) {
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        if (csrfMeta) {
+            token = csrfMeta.getAttribute('content');
+        }
+    }
+    
+    // 3. Buscar em cookie se não encontrou
+    if (!token) {
+        token = getCookie('csrftoken');
+    }
+    
+    console.log('Token CSRF encontrado:', token ? 'Sim' : 'Não');
+    return token;
+}
+
+// Função para obter cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Log quando carrega
+console.log('✅ JavaScript de gestão de cidadania carregado');
+console.log('🔑 Token CSRF disponível:', getCsrfToken() ? 'Sim' : 'Não');
+console.log('📋 Funções registradas:', {
+    aprovarCidadania: typeof window.aprovarCidadania,
+    rejeitarCidadania: typeof window.rejeitarCidadania,
+    verDetalhes: typeof window.verDetalhes,
+    confirmarAprovacao: typeof window.confirmarAprovacao,
+    confirmarRejeicao: typeof window.confirmarRejeicao
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,279 @@
+/* Estilos para a estrutura do governo */
+:root {
+    --poder-executivo: #2ecc71;
+    --poder-legislativo: #e74c3c;
+    --poder-judiciario: #f1c40f;
+    --poder-imprensa: #3498db;
+}
+
+/* Cards dos Poderes */
+.poder-button {
+    width: 100%;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    border: none;
+    border-radius: 15px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.poder-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.poder-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.poder-button.executivo::before { background-color: var(--poder-executivo); }
+.poder-button.legislativo::before { background-color: var(--poder-legislativo); }
+.poder-button.judiciario::before { background-color: var(--poder-judiciario); }
+.poder-button.imprensa::before { background-color: var(--poder-imprensa); }
+
+.poder-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.poder-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.poder-stats {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Órgãos */
+.orgaos-container {
+    display: none;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.orgao-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.orgao-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Entidades */
+.entidades-container {
+    display: none;
+    padding-left: 2rem;
+    margin-top: 1rem;
+}
+
+.entidade-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Cargos */
+.cargos-container {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bs-gray-100);
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+.cargo-card {
+    background: var(--bs-white);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.cargo-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.cargo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--bs-gray-200);
+}
+
+.cargo-nome {
+    font-weight: 600;
+    color: var(--bs-gray-800);
+    font-size: 1rem;
+}
+
+.ocupantes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ocupante-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.ocupante-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ocupante-item:active {
+    transform: translateX(5px) scale(0.98);
+}
+
+.ocupante-item.vago {
+    cursor: default;
+    opacity: 0.7;
+}
+
+.ocupante-item.vago:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: none;
+    box-shadow: none;
+}
+
+.cargo-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--bs-white);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ocupante-info {
+    flex: 1;
+}
+
+.ocupante-info a {
+    color: var(--bs-primary);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.ocupante-info a:hover {
+    color: var(--bs-primary-darker);
+    text-decoration: underline;
+}
+
+.cargo-simbolo {
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.simbolo-** {
+    background-color: #ffd700;
+    color: #000;
+}
+
+.simbolo-* {
+    background-color: #c0c0c0;
+    color: #000;
+}
+
+.simbolo-+ {
+    background-color: #cd7f32;
+    color: #fff;
+}
+
+/* Animações */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Estatísticas */
+.stats-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(45deg, #2ecc71, #3498db);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stats-label {
+    font-size: 1rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .cargos-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .poder-button {
+        padding: 1.5rem;
+    }
+    
+    .poder-icon {
+        font-size: 2rem;
+    }
+} 

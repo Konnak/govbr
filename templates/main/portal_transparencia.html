@@ -1,0 +1,736 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Portal da Transparência - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .transparency-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 4rem 0;
+        margin-bottom: 3rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #007bff;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Corrigir search-container para não conflitar com header */
+    .portal-search-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Campos maiores e mais visíveis */
+    .portal-search-container .form-control, 
+    .portal-search-container .form-select {
+        min-height: 50px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        padding: 12px 16px;
+    }
+    
+    .portal-search-container .form-control:focus, 
+    .portal-search-container .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        transform: translateY(-1px);
+    }
+    
+    /* Labels maiores */
+    .portal-search-container .form-label {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 8px;
+        color: #495057;
+    }
+    
+    .filter-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .results-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .server-card {
+        border-bottom: 1px solid #e9ecef;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .server-card:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .server-card:last-child {
+        border-bottom: none;
+    }
+    
+    .server-card h5 {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .server-card h5 a {
+        color: #2c3e50;
+        transition: color 0.3s ease;
+    }
+    
+    .server-card h5 a:hover {
+        color: #007bff;
+    }
+    
+    .server-card .badge {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+        font-weight: 500;
+    }
+    
+    .server-card img {
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .server-card:hover img {
+        transform: scale(1.05);
+    }
+    
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .loading-spinner .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        color: #007bff;
+    }
+    
+    .loading-spinner p {
+        color: #6c757d;
+        font-size: 1.1rem;
+        margin-top: 1rem;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .timeline-item {
+        border-left: 3px solid #007bff;
+        padding-left: 1rem;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #007bff;
+    }
+
+    /* Paginação */
+    .pagination {
+        margin-bottom: 0;
+        justify-content: center;
+    }
+
+    .page-link {
+        padding: 0.5rem 1rem;
+        margin: 0 0.25rem;
+        border-radius: 6px;
+        border: none;
+        color: #007bff;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        background-color: #007bff;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .page-item.active .page-link {
+        background-color: #007bff;
+        color: white;
+        box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+    }
+
+    .page-item.disabled .page-link {
+        background-color: #e9ecef;
+        color: #6c757d;
+        cursor: not-allowed;
+    }
+
+    /* Badges */
+    .badge {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    .badge.bg-info {
+        background-color: #17a2b8 !important;
+        color: white;
+    }
+
+    .badge.bg-secondary {
+        background-color: #6c757d !important;
+    }
+
+    .badge.bg-warning {
+        background-color: #ffc107 !important;
+    }
+
+    .badge.bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .badge.bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .badge.bg-primary {
+        background-color: #007bff !important;
+    }
+
+    /* Ícones */
+    .fa-discord {
+        color: #7289da;
+    }
+
+    .fa-clock {
+        color: #6c757d;
+    }
+
+    .fa-sitemap {
+        color: #28a745;
+    }
+
+    /* Estilos para timeline de movimentações */
+    .timeline {
+        position: relative;
+        padding: 1rem 0;
+    }
+
+    .timeline-item {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #007bff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease;
+    }
+
+    .timeline-item:hover {
+        transform: translateX(5px);
+    }
+
+    .timeline-item h6 {
+        margin: 0;
+        color: #007bff;
+    }
+
+    .timeline-item p {
+        font-size: 0.9rem;
+        margin: 0.5rem 0;
+    }
+
+    /* Estilos para lista de servidores antigos */
+    .list-group-item {
+        border-left: 4px solid #17a2b8;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .list-group-item:hover {
+        transform: translateX(5px);
+        background-color: #f8f9fa;
+    }
+
+    .list-group-item h6 {
+        margin: 0;
+        color: #17a2b8;
+    }
+
+    .list-group-item .badge {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Container para gráficos e listas */
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        height: 100%;
+    }
+
+    /* Estilos para cards de resultado */
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: none !important;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-title a {
+        color: #007bff;
+        font-weight: 600;
+    }
+
+    .card-title a:hover {
+        color: #0056b3;
+        text-decoration: none;
+    }
+
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    .badge.bg-info {
+        background-color: #17a2b8 !important;
+    }
+
+    .badge.bg-primary {
+        background-color: #007bff !important;
+    }
+
+    .badge.bg-secondary {
+        background-color: #6c757d !important;
+    }
+
+    /* Estilos para paginação */
+    .pagination {
+        margin-bottom: 0;
+    }
+
+    .page-link {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin: 0 0.25rem;
+        border: none;
+        color: #007bff;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    .page-link:hover {
+        background-color: #007bff;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+    }
+
+    .page-item.disabled .page-link {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Cabeçalho -->
+<div class="transparency-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="display-4 mb-3">
+                    <i class="fas fa-eye me-3"></i>
+                    Portal da Transparência
+                </h1>
+                <p class="lead">
+                    Acesso público às informações sobre servidores do governo brasileiro
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Estatísticas Gerais -->
+    <div class="row mb-5">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card text-center">
+                <div class="stat-number" data-stat="total_usuarios">{{ total_usuarios }}</div>
+                <h5 class="text-muted">Total de Usuários</h5>
+                <i class="fas fa-users fa-2x text-primary mt-2"></i>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card text-center">
+                <div class="stat-number" data-stat="total_servidores">{{ total_servidores }}</div>
+                <h5 class="text-muted">Total de Servidores</h5>
+                <i class="fas fa-user-tie fa-2x text-success mt-2"></i>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card text-center">
+                <div class="stat-number" data-stat="total_imigrantes">{{ total_imigrantes }}</div>
+                <h5 class="text-muted">Total de Imigrantes</h5>
+                <i class="fas fa-user-plus fa-2x text-warning mt-2"></i>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card text-center">
+                <div class="stat-number" data-stat="total_cidadaos">{{ total_cidadaos }}</div>
+                <h5 class="text-muted">Total de Cidadãos</h5>
+                <i class="fas fa-user-check fa-2x text-info mt-2"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Busca Avançada -->
+    <div class="portal-search-container">
+        <h3 class="mb-4">
+            <i class="fas fa-search me-2"></i>
+            Buscar Servidores
+        </h3>
+        
+        <form id="searchForm">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="searchQuery" class="form-label">Nome, Username ou Discord</label>
+                    <input type="text" class="form-control" id="searchQuery" name="q" 
+                           placeholder="Digite o nome do servidor...">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="statusFilter" class="form-label">Status</label>
+                    <select class="form-select" id="statusFilter" name="status">
+                        <option value="">Todos</option>
+                        <option value="ativo">Ativos</option>
+                        <option value="inativo">Inativos</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="nivelFilter" class="form-label">Nível de Acesso</label>
+                    <select class="form-select" id="nivelFilter" name="nivel">
+                        <option value="">Todos</option>
+                        {% for nivel_stat in niveis_stats %}
+                        <option value="{{ nivel_stat.nivel }}">{{ nivel_stat.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Filtros Avançados -->
+            <div class="filter-section">
+                <h6 class="mb-3">
+                    <i class="fas fa-filter me-2"></i>
+                    Filtros Avançados
+                </h6>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="poderFilter" class="form-label">Poder</label>
+                        <select class="form-select" id="poderFilter" name="poder">
+                            <option value="">Todos</option>
+                            {% for poder_stat in poderes_stats %}
+                            <option value="{{ poder_stat.id }}">{{ poder_stat.nome }} ({{ poder_stat.count }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="orgaoFilter" class="form-label">Órgão</label>
+                        <select class="form-select" id="orgaoFilter" name="orgao" disabled>
+                            <option value="">Selecione um poder primeiro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="entidadeFilter" class="form-label">Entidade</label>
+                        <select class="form-select" id="entidadeFilter" name="entidade" disabled>
+                            <option value="">Selecione um órgão primeiro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="cargoFilter" class="form-label">Cargo</label>
+                        <select class="form-select" id="cargoFilter" name="cargo" disabled>
+                            <option value="">Selecione uma entidade primeiro</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Filtros por Período -->
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="dataInicioFiltro" class="form-label">Nomeado a partir de</label>
+                        <input type="date" class="form-control" id="dataInicioFiltro" name="data_inicio">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="dataFimFiltro" class="form-label">Nomeado até</label>
+                        <input type="date" class="form-control" id="dataFimFiltro" name="data_fim">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="ordenacaoFilter" class="form-label">Ordenar por</label>
+                        <select class="form-select" id="ordenacaoFilter" name="ordenacao">
+                            <option value="nome">Nome (A-Z)</option>
+                            <option value="-nome">Nome (Z-A)</option>
+                            <option value="data_cadastro">Mais antigos</option>
+                            <option value="-data_cadastro">Mais recentes</option>
+                            <option value="cargo">Cargo (A-Z)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <button type="submit" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-search me-2"></i>
+                    Buscar Servidores
+                </button>
+                <button type="button" class="btn btn-outline-secondary me-3" id="clearFilters">
+                    <i class="fas fa-times me-2"></i>
+                    Limpar Filtros
+                </button>
+                <button type="button" class="btn btn-success" id="exportButton">
+                    <i class="fas fa-download me-2"></i>
+                    Exportar CSV
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Resultados da Busca -->
+    <div id="resultsContainer" class="mt-4" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                Resultados da Busca
+            </h4>
+            <div>
+                <span id="resultsInfo" class="text-muted me-3"></span>
+                <button id="exportButton" class="btn btn-outline-primary">
+                    <i class="fas fa-download me-2"></i>
+                    Exportar CSV
+                </button>
+            </div>
+        </div>
+        
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p class="mt-3 text-muted">Carregando resultados...</p>
+        </div>
+        
+        <!-- Lista de Servidores -->
+        <div id="serversList"></div>
+        
+        <!-- Paginação -->
+        <div id="paginationContainer" class="mt-4"></div>
+    </div>
+
+    <!-- Distribuição por Poderes -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="mb-4">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Distribuição por Poderes
+                </h4>
+                <div class="row">
+                    {% for poder_stat in poderes_stats %}
+                    <div class="col-12 mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">{{ poder_stat.nome }}</span>
+                            <span class="badge bg-primary">{{ poder_stat.count }}</span>
+                        </div>
+                        <div class="progress mt-1">
+                            {% widthratio poder_stat.count total_servidores 100 as percentage %}
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ percentage }}%" 
+                                 aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Distribuição por Níveis -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="mb-4">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Distribuição por Níveis
+                </h4>
+                <div class="row">
+                    {% for nivel_stat in niveis_stats %}
+                    {% if nivel_stat.count > 0 %}
+                    <div class="col-12 mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">{{ nivel_stat.nome }}</span>
+                            <span class="badge bg-secondary">{{ nivel_stat.count }}</span>
+                        </div>
+                        <div class="progress mt-1">
+                            {% widthratio nivel_stat.count total_usuarios 100 as percentage %}
+                            <div class="progress-bar bg-secondary" role="progressbar" 
+                                 style="width: {{ percentage }}%" 
+                                 aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movimentações Recentes -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="mb-4">
+                    <i class="fas fa-history me-2"></i>
+                    Movimentações Recentes
+                </h4>
+                <div class="timeline">
+                    {% for movimentacao in movimentacoes_recentes %}
+                    <div class="timeline-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">
+                                    <a href="{% url 'main:perfil_publico' movimentacao.usuario.username %}" 
+                                       class="text-decoration-none">
+                                        {{ movimentacao.usuario.nome_completo_rp }}
+                                    </a>
+                                </h6>
+                                <p class="mb-1 text-muted">
+                                    {{ movimentacao.cargo.nome }} - {{ movimentacao.cargo.entidade.nome }}
+                                </p>
+                                <small class="text-muted">
+                                    {% if movimentacao.data_fim %}
+                                        Exonerado em {{ movimentacao.data_fim|date:"d/m/Y" }}
+                                    {% else %}
+                                        Nomeado em {{ movimentacao.data_inicio|date:"d/m/Y" }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <span class="badge {% if movimentacao.data_fim %}bg-warning{% else %}bg-success{% endif %}">
+                                {% if movimentacao.data_fim %}Exoneração{% else %}Nomeação{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Servidores Mais Antigos -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="mb-4">
+                    <i class="fas fa-user-clock me-2"></i>
+                    Servidores Mais Antigos
+                </h4>
+                <div class="list-group">
+                    {% for servidor in servidores_antigos %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">
+                                    <a href="{% url 'main:perfil_publico' servidor.username %}" 
+                                       class="text-decoration-none">
+                                        {{ servidor.nome_completo_rp }}
+                                    </a>
+                                </h6>
+                                {% if servidor.profile.cargo_atual %}
+                                <p class="mb-1 text-muted">
+                                    {{ servidor.profile.cargo_atual.nome }} - 
+                                    {{ servidor.profile.cargo_atual.entidade.nome }}
+                                </p>
+                                {% endif %}
+                                <small class="text-muted">
+                                    Desde {{ servidor.data_primeiro_cargo|date:"d/m/Y" }}
+                                </small>
+                            </div>
+                            <span class="badge bg-info">
+                                {{ servidor.data_primeiro_cargo|timesince }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/portal_transparencia.js' %}"></script>
+{% endblock %} 

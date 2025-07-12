@@ -1,0 +1,502 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Histórico de {{ servidor.nome_completo_rp }} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .servidor-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stat-box {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-box:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .timeline-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #007bff;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-left: 1rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -2.2rem;
+        top: 1.5rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #007bff;
+        border: 3px solid white;
+        box-shadow: 0 0 0 3px #007bff;
+    }
+    
+    .timeline-item.ativo::before {
+        background: #28a745;
+        box-shadow: 0 0 0 3px #28a745;
+    }
+    
+    .timeline-item.exonerado::before {
+        background: #dc3545;
+        box-shadow: 0 0 0 3px #dc3545;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .gestao-item {
+        border-left: 4px solid #007bff;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #f8f9fa;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .badge-poder {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .back-link {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .back-link:hover {
+        color: #e0e0e0;
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Cabeçalho do Servidor -->
+<div class="servidor-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <img src="{{ servidor.avatar_url|default:'/static/images/default-avatar.svg' }}" 
+                     alt="Avatar" class="avatar-large">
+            </div>
+            <div class="col-md-8">
+                <h1 class="display-5 mb-2">{{ servidor.nome_completo_rp }}</h1>
+                <p class="lead mb-3">
+                    <i class="fas fa-user me-2"></i>{{ servidor.username }} | 
+                    <i class="fab fa-discord me-2"></i>{{ servidor.discord_username|default:"N/A" }} | 
+                    <i class="fas fa-gamepad me-2"></i>{{ servidor.roblox_username }}
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-light text-dark">{{ servidor.get_nivel_acesso_display }}</span>
+                    {% if servidor.verificado %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle me-1"></i>Verificado
+                    </span>
+                    {% endif %}
+                    {% if cargo_atual %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="fas fa-briefcase me-1"></i>{{ cargo_atual.get_simbolo_display_icon }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-2 text-end">
+                <a href="{% url 'main:portal_transparencia' %}" class="back-link">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Voltar ao Portal
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Estatísticas Gerais -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_cargos }}</div>
+                <h6 class="text-muted mb-0">Total de Cargos</h6>
+                <small class="text-muted">Ocupados na carreira</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-box">
+                <div class="stat-number">{{ tempo_total_servico }}</div>
+                <h6 class="text-muted mb-0">Dias de Serviço</h6>
+                <small class="text-muted">Tempo total no governo</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-box">
+                <div class="stat-number">{{ tempo_cargo_atual }}</div>
+                <h6 class="text-muted mb-0">Dias no Cargo Atual</h6>
+                <small class="text-muted">{% if cargo_atual %}{{ cargo_atual.nome }}{% else %}Sem cargo ativo{% endif %}</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-box">
+                <div class="stat-number">{{ poderes_atuacao|length }}</div>
+                <h6 class="text-muted mb-0">Poderes</h6>
+                <small class="text-muted">Onde já atuou</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cargo Atual -->
+    {% if cargo_atual %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="timeline-container">
+                <h4 class="mb-3">
+                    <i class="fas fa-briefcase me-2"></i>
+                    Cargo Atual
+                </h4>
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="text-primary">{{ cargo_atual.nome }}</h5>
+                        <p class="mb-1">
+                            <strong>Entidade:</strong> {{ cargo_atual.entidade.nome }}<br>
+                            <strong>Órgão:</strong> {{ cargo_atual.entidade.orgao.nome }}<br>
+                            <strong>Poder:</strong> {{ cargo_atual.entidade.orgao.poder.nome }}
+                        </p>
+                        <span class="badge bg-success">Ativo há {{ tempo_cargo_atual }} dias</span>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="h2 text-primary">{{ cargo_atual.get_simbolo_display_icon }}</div>
+                        <small class="text-muted">Símbolo de Gestão</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Timeline de Cargos -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="timeline-container">
+                <h4 class="mb-4">
+                    <i class="fas fa-history me-2"></i>
+                    Histórico Completo de Cargos
+                </h4>
+                
+                <div class="timeline">
+                    {% for historico in historico_cargos %}
+                    <div class="timeline-item {% if not historico.data_fim %}ativo{% else %}exonerado{% endif %}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="mb-2">
+                                    {{ historico.cargo.nome }}
+                                    <span class="badge ms-2 {% if not historico.data_fim %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {% if not historico.data_fim %}ATIVO{% else %}EXONERADO{% endif %}
+                                    </span>
+                                </h5>
+                                <p class="mb-2">
+                                    <strong>Entidade:</strong> {{ historico.cargo.entidade.nome }}<br>
+                                    <strong>Órgão:</strong> {{ historico.cargo.entidade.orgao.nome }}<br>
+                                    <strong>Poder:</strong> {{ historico.cargo.entidade.orgao.poder.nome }}
+                                </p>
+                                
+                                <div class="row text-sm text-muted">
+                                    <div class="col-md-6">
+                                        <i class="fas fa-calendar-plus me-1"></i>
+                                        <strong>Nomeado em:</strong> {{ historico.data_inicio|date:"d/m/Y H:i" }}
+                                        {% if historico.nomeado_por %}
+                                        <br><i class="fas fa-user me-1"></i>
+                                        <strong>Por:</strong> 
+                                        <a href="{% url 'main:perfil_publico' historico.nomeado_por.username %}" 
+                                           class="text-decoration-none">
+                                            {{ historico.nomeado_por.nome_completo_rp }}
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if historico.data_fim %}
+                                        <i class="fas fa-calendar-minus me-1"></i>
+                                        <strong>Exonerado em:</strong> {{ historico.data_fim|date:"d/m/Y H:i" }}
+                                        {% if historico.exonerado_por %}
+                                        <br><i class="fas fa-user me-1"></i>
+                                        <strong>Por:</strong> 
+                                        <a href="{% url 'main:perfil_publico' historico.exonerado_por.username %}" 
+                                           class="text-decoration-none">
+                                            {{ historico.exonerado_por.nome_completo_rp }}
+                                        </a>
+                                        {% endif %}
+                                        {% else %}
+                                        <i class="fas fa-clock me-1"></i>
+                                        <strong>Tempo no cargo:</strong> 
+                                        {{ historico.data_inicio|timesince }} atrás
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {% if historico.observacoes %}
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <strong>Observações:</strong> {{ historico.observacoes }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="h4 text-primary">{{ historico.cargo.get_simbolo_display_icon }}</div>
+                                <small class="text-muted">
+                                    {% if historico.data_fim %}
+                                    {% with dias=(historico.data_fim - historico.data_inicio).days %}
+                                    {{ dias }} dias no cargo
+                                    {% endwith %}
+                                    {% else %}
+                                    {% with dias=(now - historico.data_inicio).days %}
+                                    {{ dias }} dias no cargo
+                                    {% endwith %}
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h5>Nenhum cargo registrado</h5>
+                        <p>Este servidor ainda não ocupou nenhum cargo público.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos e Análises -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Cargos por Poder
+                </h5>
+                {% for poder, count in cargos_por_poder.items %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">{{ poder }}</span>
+                        <span class="badge bg-primary">{{ count }} cargo{{ count|pluralize }}</span>
+                    </div>
+                    <div class="progress mt-1">
+                        {% widthratio count total_cargos 100 as percentage %}
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ percentage }}%" 
+                             aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ percentage }}%
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-clock me-2"></i>
+                    Tempo por Poder (dias)
+                </h5>
+                {% for poder, dias in tempo_por_poder.items %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">{{ poder }}</span>
+                        <span class="badge bg-info">{{ dias }} dias</span>
+                    </div>
+                    <div class="progress mt-1">
+                        {% widthratio dias tempo_total_servico 100 as percentage %}
+                        <div class="progress-bar bg-info" role="progressbar" 
+                             style="width: {{ percentage }}%" 
+                             aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ percentage }}%
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Atividades de Gestão -->
+    {% if nomeacoes_realizadas or exoneracoes_realizadas %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            {% if nomeacoes_realizadas %}
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Nomeações Realizadas
+                    <span class="badge bg-success ms-2">{{ nomeacoes_realizadas.count }}</span>
+                </h5>
+                {% for nomeacao in nomeacoes_realizadas %}
+                <div class="gestao-item">
+                    <h6 class="mb-1">
+                        <a href="{% url 'main:perfil_publico' nomeacao.usuario.username %}" 
+                           class="text-decoration-none">
+                            {{ nomeacao.usuario.nome_completo_rp }}
+                        </a>
+                    </h6>
+                    <p class="mb-1 text-muted">
+                        {{ nomeacao.cargo.nome }} - {{ nomeacao.cargo.entidade.nome }}
+                    </p>
+                    <small class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        {{ nomeacao.data_inicio|date:"d/m/Y H:i" }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-6">
+            {% if exoneracoes_realizadas %}
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-user-minus me-2"></i>
+                    Exonerações Realizadas
+                    <span class="badge bg-warning ms-2">{{ exoneracoes_realizadas.count }}</span>
+                </h5>
+                {% for exoneracao in exoneracoes_realizadas %}
+                <div class="gestao-item">
+                    <h6 class="mb-1">
+                        <a href="{% url 'main:perfil_publico' exoneracao.usuario.username %}" 
+                           class="text-decoration-none">
+                            {{ exoneracao.usuario.nome_completo_rp }}
+                        </a>
+                    </h6>
+                    <p class="mb-1 text-muted">
+                        {{ exoneracao.cargo.nome }} - {{ exoneracao.cargo.entidade.nome }}
+                    </p>
+                    <small class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        {{ exoneracao.data_fim|date:"d/m/Y H:i" }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Informações Complementares -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Informações Complementares
+                </h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p class="mb-2">
+                            <strong>Cadastrado em:</strong><br>
+                            {{ servidor.date_joined|date:"d/m/Y H:i" }}
+                        </p>
+                        <p class="mb-2">
+                            <strong>Último acesso:</strong><br>
+                            {{ servidor.last_login|date:"d/m/Y H:i"|default:"Nunca" }}
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-2">
+                            <strong>Poderes onde atuou:</strong><br>
+                            {% for poder in poderes_atuacao %}
+                            <span class="badge badge-poder bg-secondary me-1">{{ poder }}</span>
+                            {% endfor %}
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-2">
+                            <strong>Tempo médio por cargo:</strong><br>
+                            {% if total_cargos > 0 %}
+                            {% widthratio tempo_total_servico total_cargos 1 %} dias
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'main:perfil_publico' servidor.username %}" 
+               class="btn btn-primary me-3">
+                <i class="fas fa-user me-2"></i>
+                Ver Perfil Público
+            </a>
+            <a href="{% url 'main:portal_transparencia' %}" 
+               class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Voltar ao Portal
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

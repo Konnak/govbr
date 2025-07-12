@@ -1,0 +1,856 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load noticia_tags %}
+
+{% block title %}Editar Notícia - {{ noticia.titulo }}{% endblock %}
+
+{% block extra_css %}
+<!-- Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- Dropzone -->
+<link href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" rel="stylesheet" type="text/css" />
+
+<!-- CSS Custom -->
+<link rel="stylesheet" href="{% static 'css/noticias.css' %}">
+<style>
+    /* Container principal */
+    .news-creator {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .creator-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+    
+    /* Header */
+    .creator-header {
+        text-align: center;
+        color: white;
+        margin-bottom: 3rem;
+    }
+    
+    .creator-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .creator-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    /* Cards principais */
+    .creator-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .creator-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    .card-header-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+    
+    .card-header-custom h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+    
+    .card-body-custom {
+        padding: 2rem;
+    }
+    
+    /* Formulário */
+    .form-group-modern {
+        margin-bottom: 2rem;
+    }
+    
+    .form-label-modern {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.75rem;
+        display: block;
+        font-size: 0.95rem;
+    }
+    
+    .form-control-modern {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+    }
+    
+    .form-control-modern:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        background: white;
+        outline: none;
+    }
+    
+    .form-control-modern:hover {
+        border-color: #cbd5e0;
+        background: white;
+    }
+    
+    /* Editor TinyMCE */
+    .editor-container {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .editor-container:hover {
+        border-color: #cbd5e0;
+    }
+    
+    .editor-container:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .tox-tinymce {
+        border: none !important;
+        border-radius: 0 !important;
+    }
+    
+    /* Radio buttons personalizados */
+    .radio-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+    
+    .radio-option {
+        position: relative;
+    }
+    
+    .radio-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+    
+    .radio-label {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .radio-option input[type="radio"]:checked + .radio-label {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    .radio-label:hover {
+        border-color: #cbd5e0;
+        background: white;
+    }
+    
+    .radio-option input[type="radio"]:checked + .radio-label:hover {
+        background: #5a67d8;
+        border-color: #5a67d8;
+    }
+    
+    /* Switch personalizado */
+    .switch-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+    
+    /* Container de destaque */
+    .destaque-container {
+        background: linear-gradient(135deg, #fef5e7 0%, #fff7ed 100%);
+        border: 2px solid #fed7aa;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        text-align: center;
+        animation: highlight 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes highlight {
+        0% { box-shadow: 0 0 5px rgba(251, 191, 36, 0.3); }
+        100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
+    }
+    
+    .destaque-icon {
+        font-size: 2.5rem;
+        color: #f59e0b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .destaque-title {
+        color: #92400e;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .destaque-description {
+        color: #a16207;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    /* Preview de imagem */
+    .image-preview {
+        position: relative;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    
+    /* Botões modernos */
+    .btn-modern {
+        border: none;
+        border-radius: 12px;
+        padding: 0.875rem 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-modern:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-modern:hover:before {
+        left: 100%;
+    }
+    
+    .btn-primary-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-secondary-modern {
+        background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+        color: white;
+        box-shadow: 0 10px 25px rgba(113, 128, 150, 0.3);
+    }
+    
+    .btn-secondary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(113, 128, 150, 0.4);
+        color: white;
+    }
+    
+    /* Animações */
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    
+    .fade-in-up:nth-child(1) { animation-delay: 0.1s; }
+    .fade-in-up:nth-child(2) { animation-delay: 0.2s; }
+    .fade-in-up:nth-child(3) { animation-delay: 0.3s; }
+    .fade-in-up:nth-child(4) { animation-delay: 0.4s; }
+    .fade-in-up:nth-child(5) { animation-delay: 0.5s; }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Select2 customizado */
+    .select2-container--default .select2-selection--multiple {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        min-height: 48px;
+        background: #f8fafc;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        background: white;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .creator-title {
+            font-size: 2rem;
+        }
+        
+        .creator-container {
+            padding: 0 1rem;
+        }
+        
+        .card-body-custom {
+            padding: 1.5rem;
+        }
+        
+        .radio-group {
+            flex-direction: column;
+        }
+    }
+    
+    /* Breadcrumb customizado */
+    .breadcrumb {
+        background: rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .breadcrumb-item a {
+        color: rgba(255,255,255,0.8);
+        text-decoration: none;
+    }
+    
+    .breadcrumb-item a:hover {
+        color: white;
+    }
+    
+    .breadcrumb-item.active {
+        color: white;
+        font-weight: 600;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255,255,255,0.6);
+        content: "›";
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="news-creator">
+    <div class="creator-container">
+        <div class="creator-header">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center">
+                    <li class="breadcrumb-item"><a href="{% url 'main:home' %}">Início</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'main:noticia_lista' %}">Notícias</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'main:noticia_detalhe' noticia.slug %}">{{ noticia.titulo|truncatechars:30 }}</a></li>
+                    <li class="breadcrumb-item active">Editar</li>
+                </ol>
+            </nav>
+            <h1 class="creator-title">
+                <i class="fas fa-edit"></i>
+                Editar Notícia
+            </h1>
+            <p class="creator-subtitle">Atualize as informações da sua notícia com facilidade</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" id="noticiaForm">
+            {% csrf_token %}
+            
+            <div class="row">
+                <!-- Coluna Principal -->
+                <div class="col-lg-8">
+                    <!-- Informações Básicas -->
+                    <div class="creator-card fade-in-up">
+                        <div class="card-header-custom">
+                            <h5><i class="fas fa-info-circle me-2"></i>Informações Básicas</h5>
+                        </div>
+                        <div class="card-body-custom">
+                            <!-- Título -->
+                            <div class="form-group-modern">
+                                <label for="titulo" class="form-label-modern">
+                                    <i class="fas fa-heading me-2"></i>Título da Notícia
+                                </label>
+                                <input type="text" class="form-control form-control-modern" 
+                                       id="titulo" name="titulo" value="{{ noticia.titulo }}" required
+                                       placeholder="Digite o título da notícia">
+                                <small class="text-muted mt-2 d-block">
+                                    <i class="fas fa-lightbulb me-1"></i>
+                                    Use um título claro e atrativo que desperte o interesse do leitor
+                                </small>
+                            </div>
+                            
+                            <!-- Resumo -->
+                            <div class="form-group-modern">
+                                <label for="resumo" class="form-label-modern">
+                                    <i class="fas fa-align-left me-2"></i>Resumo
+                                </label>
+                                <textarea class="form-control form-control-modern" 
+                                          id="resumo" name="resumo" rows="3" 
+                                          placeholder="Escreva um resumo da notícia...">{{ noticia.resumo }}</textarea>
+                                <small class="text-muted mt-2 d-block">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Máximo 300 caracteres. Este resumo aparecerá nos cards de notícias.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Conteúdo -->
+                    <div class="creator-card fade-in-up">
+                        <div class="card-header-custom">
+                            <h5><i class="fas fa-file-alt me-2"></i>Conteúdo da Notícia</h5>
+                        </div>
+                        <div class="card-body-custom">
+                            <div class="form-group-modern">
+                                <label for="conteudo" class="form-label-modern">
+                                    Escreva o conteúdo completo da notícia
+                                </label>
+                                <div class="editor-container">
+                                    <textarea class="form-control form-control-modern" 
+                                              id="conteudo" name="conteudo" rows="15">{{ noticia.conteudo }}</textarea>
+                                </div>
+                                <small class="text-muted mt-2 d-block">
+                                    <i class="fas fa-magic me-1"></i>
+                                    Use o editor para formatar o texto, adicionar links e destacar informações importantes
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fonte -->
+                    <div class="creator-card fade-in-up">
+                        <div class="card-header-custom">
+                            <h5><i class="fas fa-link me-2"></i>Fonte e Referências</h5>
+                        </div>
+                        <div class="card-body-custom">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label for="fonte" class="form-label-modern">
+                                            <i class="fas fa-building me-2"></i>Nome da Fonte
+                                        </label>
+                                        <input type="text" class="form-control form-control-modern" 
+                                               id="fonte" name="fonte" value="{{ noticia.fonte }}"
+                                               placeholder="Ex: Assessoria de Imprensa">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label for="link_fonte" class="form-label-modern">
+                                            <i class="fas fa-external-link-alt me-2"></i>Link da Fonte
+                                        </label>
+                                        <input type="url" class="form-control form-control-modern" 
+                                               id="link_fonte" name="link_fonte" value="{{ noticia.link_fonte }}"
+                                               placeholder="https://exemplo.com">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Configurações -->
+                    <div class="creator-card fade-in-up">
+                        <div class="card-header-custom">
+                            <h5><i class="fas fa-cog me-2"></i>Configurações</h5>
+                        </div>
+                        <div class="card-body-custom">
+                            <!-- Tipo -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-tag me-2"></i>Tipo de Notícia
+                                </label>
+                                
+                                <!-- Sempre notícia do governo -->
+                                <div class="alert alert-info">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-university me-3 text-primary"></i>
+                                        <div>
+                                            <strong>Notícia Oficial do Governo</strong>
+                                            {% if user.profile.cargo_atual.entidade.orgao %}
+                                            <br><small>Publicando como: {{ user.profile.cargo_atual.entidade.orgao.nome }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="tipo" value="governo">
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="form-group-modern">
+                                <label for="status" class="form-label-modern">
+                                    <i class="fas fa-flag me-2"></i>Status da Publicação
+                                </label>
+                                <select class="form-control form-control-modern" id="status" name="status" required>
+                                    <option value="rascunho" {% if noticia.status == 'rascunho' %}selected{% endif %}>
+                                        📝 Rascunho
+                                    </option>
+                                    <option value="revisao" {% if noticia.status == 'revisao' %}selected{% endif %}>
+                                        👀 Enviar para Revisão
+                                    </option>
+                                    
+                                    {% if user.is_superuser %}
+                                    <option value="publicado" {% if noticia.status == 'publicado' %}selected{% endif %}>
+                                        🚀 Publicar Agora
+                                    </option>
+                                    {% elif user.profile.cargo_atual.simbolo_gestao in '**,*' %}
+                                    <option value="publicado" {% if noticia.status == 'publicado' %}selected{% endif %}>
+                                        🚀 Publicar Agora (Autoridade)
+                                    </option>
+                                    {% endif %}
+                                </select>
+                                
+                                <!-- Dica sobre publicação -->
+                                <small class="text-muted mt-2 d-block">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    {% if user.is_superuser %}
+                                    Como administrador, você pode publicar diretamente.
+                                    {% elif user.profile.cargo_atual.simbolo_gestao in '**,*' %}
+                                    Seu cargo permite publicação direta de notícias oficiais.
+                                    {% else %}
+                                    Notícias do governo precisam de aprovação para publicação.
+                                    {% endif %}
+                                </small>
+                            </div>
+                            
+                            <!-- Destaque -->
+                            <div class="form-group-modern">
+                                <div class="switch-container">
+                                    <label class="switch">
+                                        <input type="checkbox" id="destaque" name="destaque" 
+                                               {% if noticia.destaque %}checked{% endif %}>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <label for="destaque" class="form-label-modern mb-0">
+                                        <i class="fas fa-star me-2"></i>Destacar no Slide Principal
+                                    </label>
+                                </div>
+                                
+                                <div class="destaque-container" id="destaqueInfo" style="display: {% if noticia.destaque %}block{% else %}none{% endif %};">
+                                    <div class="destaque-icon">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <h6 class="destaque-title">Notícia em Destaque!</h6>
+                                    <p class="destaque-description">
+                                        Esta notícia aparecerá no carrossel principal da página inicial, 
+                                        ganhando maior visibilidade para todos os visitantes.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Comentários -->
+                            <div class="form-group-modern">
+                                <div class="switch-container">
+                                    <label class="switch">
+                                        <input type="checkbox" id="permitir_comentarios" name="permitir_comentarios" 
+                                               {% if noticia.permitir_comentarios %}checked{% endif %}>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <label for="permitir_comentarios" class="form-label-modern mb-0">
+                                        <i class="fas fa-comments me-2"></i>Permitir Comentários
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Imagem Principal -->
+                    <div class="creator-card fade-in-up">
+                        <div class="card-header-custom">
+                            <h5><i class="fas fa-image me-2"></i>Imagem Principal</h5>
+                        </div>
+                        <div class="card-body-custom">
+                            {% if noticia.imagem_principal %}
+                            <div id="imagemPreview" class="image-preview mb-3">
+                                <img src="{{ noticia.imagem_principal.url }}" alt="Preview">
+                            </div>
+                            {% else %}
+                            <div id="imagemPreview" class="image-preview" style="display: none;">
+                                <img src="#" alt="Preview">
+                            </div>
+                            {% endif %}
+                            <div class="form-group-modern">
+                                <label for="imagem_principal" class="form-label-modern">
+                                    {% if noticia.imagem_principal %}Alterar Imagem{% else %}Selecionar Imagem{% endif %}
+                                </label>
+                                <input type="file" class="form-control form-control-modern" 
+                                       id="imagem_principal" name="imagem_principal" accept="image/*">
+                                <small class="text-muted mt-2 d-block">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Recomendado: 1200x630px para melhor visualização
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Categorização -->
+                    <div class="creator-card fade-in-up">
+                        <div class="card-header-custom">
+                            <h5><i class="fas fa-tags me-2"></i>Categorização</h5>
+                        </div>
+                        <div class="card-body-custom">
+                            <!-- Categorias -->
+                            <div class="form-group-modern">
+                                <label for="categorias" class="form-label-modern">
+                                    <i class="fas fa-folder me-2"></i>Categorias
+                                </label>
+                                <select class="form-select" id="categorias" name="categorias" multiple>
+                                    {% for categoria in categorias %}
+                                    <option value="{{ categoria.id }}" 
+                                            {% if categoria in noticia.categorias.all %}selected{% endif %}>
+                                        {{ categoria.nome }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Tags -->
+                            <div class="form-group-modern">
+                                <label for="tags" class="form-label-modern">
+                                    <i class="fas fa-hashtag me-2"></i>Tags
+                                </label>
+                                <select class="form-select" id="tags" name="tags" multiple>
+                                    {% for tag in tags %}
+                                    <option value="{{ tag.id }}" 
+                                            {% if tag in noticia.tags.all %}selected{% endif %}>
+                                        {{ tag.nome }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted mt-2 d-block">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Digite para criar novas tags
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ações -->
+                    <div class="creator-card fade-in-up">
+                        <div class="card-body-custom">
+                            <button type="submit" class="btn btn-modern btn-primary-modern w-100 mb-3">
+                                <i class="fas fa-save"></i>
+                                Atualizar Notícia
+                            </button>
+                            <a href="{% url 'main:noticia_detalhe' noticia.slug %}" 
+                               class="btn btn-modern btn-secondary-modern w-100">
+                                <i class="fas fa-times"></i>Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- jQuery (necessário para Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- TinyMCE Self-hosted (sem necessidade de API key) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js"></script>
+
+<!-- Arquivo de idioma português local -->
+<script src="{% static 'js/tinymce/langs/pt_BR.js' %}"></script>
+
+<!-- Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Dropzone -->
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+
+<script>
+// Desabilitar auto-discover do Dropzone
+Dropzone.autoDiscover = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar TinyMCE
+    tinymce.init({
+        selector: '#conteudo',
+        height: 400,
+        language: 'pt_BR',
+        menubar: false,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+        ],
+        toolbar: 'undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 16px; }',
+        setup: function (editor) {
+            editor.on('change', function () {
+                editor.save();
+            });
+        }
+    });
+    
+    // Inicializar Select2 para categorias e tags
+    $('#categorias').select2({
+        placeholder: 'Selecione as categorias',
+        allowClear: true
+    });
+    
+    $('#tags').select2({
+        placeholder: 'Selecione ou digite tags',
+        allowClear: true,
+        tags: true
+    });
+    
+    // Preview da imagem
+    document.getElementById('imagem_principal').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('imagemPreview');
+                const img = preview.querySelector('img');
+                img.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Toggle destaque info
+    document.getElementById('destaque').addEventListener('change', function() {
+        const destaqueInfo = document.getElementById('destaqueInfo');
+        destaqueInfo.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    // Auto-gerar slug do título (mantemos a funcionalidade)
+    document.getElementById('titulo').addEventListener('input', function() {
+        // Slug é readonly na edição, mas mantemos a funcionalidade
+    });
+    
+    // Contador de caracteres para resumo
+    const resumoTextarea = document.getElementById('resumo');
+    const maxChars = 300;
+    
+    function updateCharCount() {
+        const currentLength = resumoTextarea.value.length;
+        const remaining = maxChars - currentLength;
+        
+        let countElement = document.getElementById('char-count');
+        if (!countElement) {
+            countElement = document.createElement('small');
+            countElement.id = 'char-count';
+            countElement.className = 'text-muted mt-1 d-block';
+            resumoTextarea.parentNode.appendChild(countElement);
+        }
+        
+        countElement.innerHTML = `<i class="fas fa-pencil-alt me-1"></i>${currentLength}/${maxChars} caracteres`;
+        
+        if (remaining < 0) {
+            countElement.className = 'text-danger mt-1 d-block';
+        } else if (remaining < 50) {
+            countElement.className = 'text-warning mt-1 d-block';
+        } else {
+            countElement.className = 'text-muted mt-1 d-block';
+        }
+    }
+    
+    resumoTextarea.addEventListener('input', updateCharCount);
+    updateCharCount(); // Inicializar contador
+});
+
+// Instância do gerenciador de notícias
+const noticiasManager = new NoticiasManager();
+</script>
+{% endblock %} 

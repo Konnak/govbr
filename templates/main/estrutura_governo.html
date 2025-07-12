@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Estrutura do Governo - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/estrutura_governo.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">🏛️ Estrutura do Governo</h1>
+                    <p class="text-muted mb-0">Organização completa dos poderes, órgãos, entidades e cargos</p>
+                </div>
+                <div>
+                    <a href="{% url 'main:home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_poderes }}</div>
+                <div class="stats-label">Poderes</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_orgaos }}</div>
+                <div class="stats-label">Órgãos</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_entidades }}</div>
+                <div class="stats-label">Entidades</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_cargos }}</div>
+                <div class="stats-label">Cargos</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estrutura dos Poderes -->
+    <div class="row">
+        {% for poder in poderes %}
+        <div class="col-md-6">
+            <button class="poder-button {{ poder.nome|lower }}" data-poder-id="{{ poder.id }}">
+                <div class="poder-icon">
+                    {% if poder.nome == 'EXECUTIVO' %}🏛️
+                    {% elif poder.nome == 'JUDICIÁRIO' %}⚖️
+                    {% elif poder.nome == 'LEGISLATIVO' %}📜
+                    {% elif poder.nome == 'IMPRENSA' %}📰
+                    {% endif %}
+                </div>
+                <div class="poder-title">{{ poder.nome }}</div>
+                <div class="poder-stats">{{ poder.orgao_set.count }} órgãos</div>
+            </button>
+
+            <!-- Container de Órgãos -->
+            <div id="orgaos-{{ poder.id }}" class="orgaos-container">
+                {% for orgao in poder.orgao_set.all %}
+                <div class="orgao-card" data-orgao-id="{{ orgao.id }}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">📁 {{ orgao.nome }}</h5>
+                            <small class="text-muted">{{ orgao.entidade_set.count }} entidades</small>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+
+                    <!-- Container de Entidades -->
+                    <div id="entidades-{{ orgao.id }}" class="entidades-container">
+                        {% for entidade in orgao.entidade_set.all %}
+                        <div class="entidade-card" data-entidade-id="{{ entidade.id }}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">🏢 {{ entidade.nome }}</h6>
+                                    <small class="text-muted">{{ entidade.cargo_set.count }} cargos</small>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+
+                            <!-- Container de Cargos -->
+                            <div id="cargos-{{ entidade.id }}" class="cargos-container">
+                                {% for cargo in entidade.cargo_set.all %}
+                                <div class="cargo-card">
+                                    <div class="cargo-header">
+                                        <div class="cargo-nome">{{ cargo.nome }}</div>
+                                        {% if cargo.simbolo_gestao != 'nenhum' %}
+                                        <span class="cargo-simbolo simbolo-{{ cargo.simbolo_gestao }}">
+                                            {{ cargo.simbolo_gestao }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="ocupantes-list">
+                                        {% with ocupantes=cargo.get_ocupantes_atuais %}
+                                        {% if ocupantes %}
+                                            {% for historico in ocupantes %}
+                                            {% if historico.usuario %}
+                                            <a href="{% url 'main:perfil_publico' historico.usuario.username %}" class="ocupante-item">
+                                                <img src="{{ historico.usuario.get_avatar_url }}" alt="Avatar" class="cargo-avatar">
+                                                <div class="ocupante-info">
+                                                    {{ historico.usuario.nome_completo_rp }}
+                                                </div>
+                                            </a>
+                                            {% else %}
+                                            <div class="ocupante-item vago">
+                                                <img src="{% static 'images/default-avatar.svg' %}" alt="Avatar" class="cargo-avatar">
+                                                <div class="ocupante-info">
+                                                    <span class="text-muted">Usuário não encontrado</span>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="ocupante-item vago">
+                                                <img src="{% static 'images/default-avatar.svg' %}" alt="Avatar" class="cargo-avatar">
+                                                <div class="ocupante-info">
+                                                    <span class="text-muted">Cargo vago</span>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-muted">Nenhuma entidade cadastrada</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-muted">Nenhum órgão cadastrado</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Nenhum poder cadastrado no sistema.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Legenda -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📋 Legenda dos Símbolos de Gestão</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-3">
+                        <div>
+                            <span class="cargo-simbolo simbolo-**">**</span>
+                            <span class="ms-2">Cargo de Alta Gestão</span>
+                        </div>
+                        <div>
+                            <span class="cargo-simbolo simbolo-*">*</span>
+                            <span class="ms-2">Cargo de Gestão</span>
+                        </div>
+                        <div>
+                            <span class="cargo-simbolo simbolo-+">+</span>
+                            <span class="ms-2">Cargo de Supervisão</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/estrutura_governo.js' %}"></script>
+{% endblock %} 

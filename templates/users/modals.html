@@ -1,0 +1,239 @@
+{% csrf_token %}
+
+<!-- Modal de Login -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    Entrar no Sistema
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Usuário</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Senha</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            Entrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Alterar Senha -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">
+                    <i class="fas fa-key me-2"></i>
+                    Alterar Senha
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="mb-3">
+                        <label for="senha_atual" class="form-label">Senha Atual</label>
+                        <input type="password" class="form-control" id="senha_atual" name="senha_atual" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nova_senha" class="form-label">Nova Senha</label>
+                        <input type="password" class="form-control" id="nova_senha" name="nova_senha" required minlength="8">
+                        <div class="form-text">A senha deve ter pelo menos 8 caracteres</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmar_senha" class="form-label">Confirmar Nova Senha</label>
+                        <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Alterar Senha
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Solicitar Alteração de Nome -->
+<div class="modal fade" id="changeNameModal" tabindex="-1" aria-labelledby="changeNameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changeNameModalLabel">
+                    <i class="fas fa-edit me-2"></i>
+                    Solicitar Alteração de Nome
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Atenção:</strong> Alterações de nome precisam ser aprovadas pelo staff. 
+                    Forneça um motivo válido para sua solicitação.
+                </div>
+                <form id="changeNameForm">
+                    <div class="mb-3">
+                        <label for="nome_atual_display" class="form-label">Nome Atual</label>
+                        <input type="text" class="form-control" id="nome_atual_display" value="{{ user.nome_completo_rp }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="novo_nome" class="form-label">Novo Nome</label>
+                        <input type="text" class="form-control" id="novo_nome" name="novo_nome" required minlength="3" maxlength="100">
+                        <div class="form-text">Digite o novo nome que deseja usar no roleplay</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="motivo" class="form-label">Motivo da Alteração</label>
+                        <textarea class="form-control" id="motivo" name="motivo" rows="4" required minlength="10" maxlength="500" 
+                                  placeholder="Explique o motivo da alteração do nome..."></textarea>
+                        <div class="form-text">Mínimo 10 caracteres, máximo 500</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Enviar Solicitação
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Solicitar Cidadania -->
+<div class="modal fade" id="citizenshipModal" tabindex="-1" aria-labelledby="citizenshipModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="citizenshipModalLabel">
+                    <i class="fas fa-flag me-2"></i>
+                    Solicitar Cidadania Brasileira
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Importante:</strong> A cidadania brasileira deve ser aprovada pelo Diretor da Polícia Federal. 
+                    Sua solicitação será analisada e você receberá uma resposta em breve.
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-user-friends fa-2x text-muted mb-2"></i>
+                                <h6>Status Atual</h6>
+                                <span class="badge bg-secondary">Imigrante</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-flag fa-2x text-success mb-2"></i>
+                                <h6>Status Desejado</h6>
+                                <span class="badge bg-success">Cidadão Brasileiro</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="citizenshipForm">
+                    <div class="mb-3">
+                        <label for="motivo_cidadania" class="form-label">
+                            Motivo da Solicitação de Cidadania
+                            <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="motivo_cidadania" name="motivo" rows="6" required minlength="50" maxlength="1000" 
+                                  placeholder="Explique detalhadamente por que deseja obter a cidadania brasileira. Inclua informações sobre:
+- Seu tempo de permanência no país
+- Suas contribuições para a comunidade
+- Seus planos futuros como cidadão
+- Qualquer experiência relevante no roleplay governamental"></textarea>
+                        <div class="form-text">Mínimo 50 caracteres, máximo 1000. Seja detalhado e honesto.</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-clipboard-list me-2"></i>Critérios de Avaliação:</h6>
+                        <ul class="mb-0">
+                            <li>Tempo de permanência no servidor</li>
+                            <li>Comportamento e contribuições para a comunidade</li>
+                            <li>Conhecimento das leis e regulamentos</li>
+                            <li>Participação ativa no roleplay</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Enviar Solicitação de Cidadania
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Vincular Discord -->
+<div class="modal fade" id="linkDiscordModal" tabindex="-1" aria-labelledby="linkDiscordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="linkDiscordModalLabel">
+                    <i class="fab fa-discord me-2"></i>
+                    Vincular Discord
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fab fa-discord me-2"></i>
+                    <strong>Vincule sua conta do Discord</strong><br>
+                    Isso permitirá que você receba notificações e participe de eventos especiais.
+                </div>
+                
+                <form id="linkDiscordForm">
+                    <div class="mb-3">
+                        <label for="discord_username" class="form-label">Username do Discord</label>
+                        <input type="text" class="form-control" id="discord_username" name="discord_username" required 
+                               placeholder="Ex: usuario#1234 ou @usuario">
+                        <div class="form-text">
+                            Digite seu username do Discord. Pode ser no formato antigo (usuario#1234) ou novo (@usuario)
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Importante:</strong> Certifique-se de que o username está correto. 
+                        Você poderá alterar posteriormente se necessário.
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-info">
+                            <i class="fab fa-discord me-2"></i>
+                            Vincular Discord
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div> 

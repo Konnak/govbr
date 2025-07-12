@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ config_diario.titulo_diario }} - Nº {{ diario.numero }}</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 2cm 2cm 3cm 2cm;
+            
+            @frame footer_frame {
+                -pdf-frame-content: footer_content;
+                left: 2cm;
+                right: 2cm;
+                bottom: 1cm;
+                height: 1cm;
+            }
+        }
+        
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            color: #000;
+        }
+
+        .diario-header {
+            border-top: 3px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            text-align: center;
+            background: white;
+        }
+
+        .brasoes {
+            width: 100%;
+            margin-bottom: 1px;
+        }
+
+        .brasoes table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .brasoes table td {
+            padding: 0;
+            margin: 0;
+            vertical-align: middle;
+        }
+
+        .brasao-cell {
+            width: 60px;
+            text-align: center;
+            vertical-align: middle;
+            padding: 0;
+        }
+
+        .brasao {
+            width: 30px;
+            height: 50px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            margin: 0 auto;
+            text-align: center;
+            font-weight: bold;
+            font-size: 10px;
+            background: #fff;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brasao img {
+            max-width: 35px !important;
+            max-height: 35px !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
+            border-radius: 0 !important;
+        }
+
+        .titulo-central {
+            text-align: center;
+            vertical-align: middle;
+            padding: 0;
+        }
+
+        .diario-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 1px;
+            color: #000;
+            line-height: 1.2;
+        }
+
+        .diario-subtitle {
+            font-size: 12px;
+            margin: 2px 0 0 0;
+            color: #000;
+            line-height: 1.2;
+        }
+
+        .info-cabecalho {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 12px;
+            font-weight: bold;
+            max-width: 800px;
+            margin: 5px auto;
+        }
+
+        .linha-separadora {
+            border-bottom: 1px solid #000;
+            margin: 10px 0;
+        }
+
+        .secao-titulo {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            text-align: center;
+            padding: 10px;
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+            background: #f8f9fa;
+            page-break-after: avoid;
+        }
+
+        .publicacao {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 25px;
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+            page-break-after: always;
+        }
+
+        .mensagem-numero {
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #000;
+        }
+
+        .destinatario {
+            margin: 15px 0;
+            line-height: 1.5;
+            font-size: 11px;
+        }
+
+        .assunto {
+            margin: 20px 0;
+            padding: 12px;
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .conteudo {
+            text-align: justify;
+            line-height: 1.5;
+            margin: 20px 0;
+            font-size: 11px;
+        }
+
+        .assinatura-bloco {
+            margin: 20px auto;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+            line-height: 1.3;
+        }
+
+        .rubrica-assinatura {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 18px;
+            color: #000;
+            text-decoration: underline;
+            font-weight: bold;
+            display: inline;
+        }
+
+        .nome-completo {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11px;
+            font-weight: bold;
+            color: #000;
+            display: inline;
+        }
+
+        .cargo-assinante {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 10px;
+            color: #000;
+            display: inline;
+        }
+
+        .orgao-assinante {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 10px;
+            color: #000;
+            display: inline;
+        }
+
+        .documento-digital {
+            margin: 15px auto;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #000;
+            border-collapse: collapse;
+        }
+
+        .documento-digital td {
+            padding: 8px;
+            text-align: center;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 9px;
+            border: 1px solid #000;
+            background-color: #f8f8f8;
+        }
+
+        .data-final {
+            text-align: center;
+            margin-top: 0.1px;
+            font-size: 10px;
+            font-style: italic;
+        }
+
+        .strong {
+            font-weight: bold;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        /* Rodapé */
+        #footer_content {
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="diario-oficial">
+        <!-- Header Oficial do DOU -->
+        <div class="diario-header">
+            <div class="brasoes">
+                <table>
+                    <tr>
+                        <td class="brasao-cell">
+                            <div class="brasao">
+                                {% if logo_esquerda_base64 %}
+                                    <img src="{{ logo_esquerda_base64 }}" alt="{{ config_diario.texto_logo_esquerda }}">
+                                {% else %}
+                                    {{ config_diario.texto_logo_esquerda }}
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="titulo-central">
+                            <div class="diario-title">{{ config_diario.titulo_diario }}</div>
+                            <div class="diario-subtitle">{{ config_diario.subtitulo_diario }}</div>
+                        </td>
+                        <td class="brasao-cell">
+                            <div class="brasao">
+                                {% if logo_direita_base64 %}
+                                    <img src="{{ logo_direita_base64 }}" alt="{{ config_diario.texto_logo_direita }}">
+                                {% else %}
+                                    {{ config_diario.texto_logo_direita }}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Informações do Cabeçalho -->
+        <div class="info-cabecalho">
+            <div class="ano-numero">ANO MMXXV</div>
+            <div class="data-local">Brasília - DF, {{ diario.data_publicacao|date:"l, d \d\e F \d\e Y"|capfirst }}</div>
+        </div>
+
+        <div class="linha-separadora"></div>
+
+        <!-- Conteúdo por Seção -->
+        {% for secao_key, secao_data in publicacoes_por_secao.items %}
+        {% if secao_data.publicacoes %}
+        <div class="secao-titulo">
+            {% if secao_key == 'executivo' %}
+            SEÇÃO 1 - PODER EXECUTIVO
+            {% elif secao_key == 'legislativo' %}
+            SEÇÃO 2 - PODER LEGISLATIVO  
+            {% elif secao_key == 'judiciario' %}
+            SEÇÃO 3 - PODER JUDICIÁRIO
+            {% endif %}
+        </div>
+
+        {% for publicacao in secao_data.publicacoes %}
+        <div class="publicacao">
+            <!-- Número da Mensagem/Publicação -->
+            <div class="mensagem-numero">
+                {% if publicacao.tipo == 'decreto' %}
+                DECRETO Nº {{ publicacao.id }}, DE {{ publicacao.diario.data_publicacao|date:"d \d\e F \d\e Y"|upper }}
+                {% elif publicacao.tipo == 'portaria' %}
+                PORTARIA Nº {{ publicacao.id }}, DE {{ publicacao.diario.data_publicacao|date:"d \d\e F \d\e Y"|upper }}
+                {% else %}
+                MENSAGEM Nº {{ publicacao.id }}, DE {{ publicacao.diario.data_publicacao|date:"d \d\e F \d\e Y"|upper }}
+                {% endif %}
+            </div>
+
+            <!-- Destinatário (se for nomeação/exoneração) -->
+            {% if publicacao.historico_cargo %}
+            <div class="destinatario">
+                {% if publicacao.historico_cargo.nomeado_por %}
+                À Sua Excelência, o Senhor<br>
+                <span class="strong">{{ publicacao.historico_cargo.nomeado_por.nome_completo_rp|upper }}</span><br>
+                {{ publicacao.historico_cargo.nomeado_por.profile.cargo_atual.nome }}<br>
+                <span class="italic">{{ publicacao.historico_cargo.cargo.entidade.orgao.nome }}, {{ publicacao.historico_cargo.cargo.entidade.nome }}</span>
+                {% elif publicacao.historico_cargo.exonerado_por %}
+                À Sua Excelência, o Senhor<br>
+                <span class="strong">{{ publicacao.historico_cargo.exonerado_por.nome_completo_rp|upper }}</span><br>
+                {{ publicacao.historico_cargo.exonerado_por.profile.cargo_atual.nome }}<br>
+                <span class="italic">{{ publicacao.historico_cargo.cargo.entidade.orgao.nome }}, {{ publicacao.historico_cargo.cargo.entidade.nome }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Assunto -->
+            <div class="assunto">
+                Assunto: {{ publicacao.titulo }}
+            </div>
+
+            <!-- Conteúdo -->
+            <div class="conteudo">
+                {% if publicacao.historico_cargo %}
+                Senhor {{ publicacao.historico_cargo.cargo.nome }},<br><br>
+
+                {% if publicacao.tipo == 'nomeacao' %}
+                Cumprimentando-o, venho por meio deste informá-lo da nomeação de <span class="strong">{{ publicacao.historico_cargo.usuario.nome_completo_rp }}</span> para exercer o cargo de {{ publicacao.historico_cargo.cargo.nome }}, {{ publicacao.historico_cargo.cargo.simbolo_gestao }}, do {{ publicacao.historico_cargo.cargo.entidade.nome }}, vinculado ao {{ publicacao.historico_cargo.cargo.entidade.orgao.nome }}.<br><br>
+
+                A nomeação tem por objetivo assegurar amplo acesso da população ao ensino superior de qualidade, promovendo a pluralidade acadêmica e contribuindo significativamente para o desenvolvimento científico, social e econômico do País.<br><br>
+
+                Renovo meus votos de consideração.
+                {% elif publicacao.tipo == 'exoneracao' %}
+                Cumprimentando-o, venho por meio deste informá-lo da exoneração de <span class="strong">{{ publicacao.historico_cargo.usuario.nome_completo_rp }}</span> do cargo de {{ publicacao.historico_cargo.cargo.nome }}, {{ publicacao.historico_cargo.cargo.simbolo_gestao }}, do {{ publicacao.historico_cargo.cargo.entidade.nome }}, vinculado ao {{ publicacao.historico_cargo.cargo.entidade.orgao.nome }}.<br><br>
+
+                {% if publicacao.historico_cargo.observacoes %}
+                A exoneração se dá em virtude de {{ publicacao.historico_cargo.observacoes|lower }}.<br><br>
+                {% else %}
+                A exoneração se dá a pedido do interessado.<br><br>
+                {% endif %}
+
+                Renovo meus votos de consideração.
+                {% endif %}
+                {% else %}
+                {{ publicacao.conteudo|safe }}
+                {% endif %}
+            </div>
+
+            <!-- Assinatura -->
+            <div class="assinatura-bloco">
+                {% if publicacao.historico_cargo %}
+                    {% if publicacao.tipo == 'nomeacao' and publicacao.historico_cargo.nomeado_por %}
+                        <span class="rubrica-assinatura">{{ publicacao.historico_cargo.nomeado_por.nome_completo_rp|slice:":2" }}</span><br>
+                        <span class="nome-completo">{{ publicacao.historico_cargo.nomeado_por.nome_completo_rp }}</span><br>
+                        <span class="cargo-assinante">{{ publicacao.historico_cargo.nomeado_por.profile.cargo_atual.nome }}</span><br>
+                        <span class="orgao-assinante">{{ publicacao.historico_cargo.nomeado_por.profile.cargo_atual.entidade.orgao.nome }}</span>
+                        
+                        <table class="documento-digital">
+                            <tr>
+                                <td>DOCUMENTO DIGITALMENTE ASSINADO POR {{ publicacao.historico_cargo.nomeado_por.nome_completo_rp|upper }} ({{ publicacao.historico_cargo.nomeado_por.id }}), CONFORME A LEI Nº 14.063.</td>
+                            </tr>
+                        </table>
+                    {% elif publicacao.tipo == 'exoneracao' and publicacao.historico_cargo.exonerado_por %}
+                        <span class="rubrica-assinatura">{{ publicacao.historico_cargo.exonerado_por.nome_completo_rp|slice:":2" }}</span><br>
+                        <span class="nome-completo">{{ publicacao.historico_cargo.exonerado_por.nome_completo_rp }}</span><br>
+                        <span class="cargo-assinante">{{ publicacao.historico_cargo.exonerado_por.profile.cargo_atual.nome }}</span><br>
+                        <span class="orgao-assinante">{{ publicacao.historico_cargo.exonerado_por.profile.cargo_atual.entidade.orgao.nome }}</span>
+                        
+                        <table class="documento-digital">
+                            <tr>
+                                <td>DOCUMENTO DIGITALMENTE ASSINADO POR {{ publicacao.historico_cargo.exonerado_por.nome_completo_rp|upper }} ({{ publicacao.historico_cargo.exonerado_por.id }}), CONFORME A LEI Nº 14.063.</td>
+                            </tr>
+                        </table>
+                    {% else %}
+                        <span class="rubrica-assinatura">AC</span><br>
+                        <span class="nome-completo">AUTORIDADE COMPETENTE</span><br>
+                        <span class="cargo-assinante">{{ publicacao.historico_cargo.cargo.entidade.orgao.poder.nome }}</span><br>
+                        <span class="orgao-assinante">República Federativa do Brasil</span>
+                        
+                        <table class="documento-digital">
+                            <tr>
+                                <td>DOCUMENTO DIGITALMENTE ASSINADO POR AUTORIDADE COMPETENTE ({{ publicacao.id }}), CONFORME A LEI Nº 14.063.</td>
+                            </tr>
+                        </table>
+                    {% endif %}
+                {% elif publicacao.criado_por %}
+                    <span class="rubrica-assinatura">{{ publicacao.criado_por.nome_completo_rp|slice:":2" }}</span><br>
+                    <span class="nome-completo">{{ publicacao.criado_por.nome_completo_rp }}</span><br>
+                    <span class="cargo-assinante">{{ publicacao.criado_por.profile.cargo_atual.nome }}</span><br>
+                    <span class="orgao-assinante">{{ publicacao.criado_por.profile.cargo_atual.entidade.orgao.nome }}</span>
+                    
+                    <table class="documento-digital">
+                        <tr>
+                            <td>DOCUMENTO DIGITALMENTE ASSINADO POR {{ publicacao.criado_por.nome_completo_rp|upper }} ({{ publicacao.criado_por.id }}), CONFORME A LEI Nº 14.063.</td>
+                        </tr>
+                    </table>
+                {% else %}
+                    <span class="rubrica-assinatura">IN</span><br>
+                    <span class="nome-completo">IMPRENSA NACIONAL</span><br>
+                    <span class="cargo-assinante">Imprensa Nacional</span><br>
+                    <span class="orgao-assinante">República Federativa do Brasil</span>
+                    
+                    <table class="documento-digital">
+                        <tr>
+                            <td>DOCUMENTO DIGITALMENTE ASSINADO POR IMPRENSA NACIONAL ({{ publicacao.id }}), CONFORME A LEI Nº 14.063.</td>
+                        </tr>
+                    </table>
+                {% endif %}
+            </div>
+
+            <!-- Data Final -->
+            <div class="data-final">
+                Brasília, {{ publicacao.diario.data_publicacao|date:"d \d\e F \d\e Y" }}; {{ publicacao.diario.data_publicacao|date:"Y"|add:"-1822" }}º da Independência e {{ publicacao.diario.data_publicacao|date:"Y"|add:"-1889" }}º da República
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+
+        {% if not publicacoes_por_secao.executivo.publicacoes and not publicacoes_por_secao.legislativo.publicacoes and not publicacoes_por_secao.judiciario.publicacoes %}
+        <div style="text-align: center; margin-top: 50px;">
+            <p style="font-size: 16px; color: #666;">
+                Esta edição do Diário Oficial não possui publicações.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Rodapé com numeração de páginas e data de geração -->
+    <div id="footer_content" style="text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ccc; padding-top: 5px;">
+        Página <pdf:pagenumber> de <pdf:pagecount> - Gerado em {% now "d/m/Y H:i" %}
+    </div>
+</body>
+</html> 

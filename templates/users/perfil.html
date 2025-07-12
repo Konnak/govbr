@@ -1,0 +1,819 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Meu Perfil - {{ user.nome_completo_rp }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-header {
+    background: linear-gradient(135deg, #1351b4 0%, #0d47a1 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 4s infinite;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.nivel-badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-profile {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+
+.card-profile:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+.btn-action {
+    border-radius: 25px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.timeline-item {
+    border-left: 3px solid #0d6efd;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    background: #0d6efd;
+    border-radius: 50%;
+}
+
+.status-pendente { background-color: #ffc107; }
+.status-aprovada { background-color: #28a745; }
+.status-rejeitada { background-color: #dc3545; }
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .profile-header {
+        padding: 1.5rem 0;
+        text-align: center;
+    }
+    
+    .profile-avatar {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .btn-action {
+        font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header do Perfil -->
+<div class="profile-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <img src="{{ user.avatar_url|default:'/static/images/default-avatar.svg' }}" 
+                     alt="Avatar" class="profile-avatar">
+            </div>
+            <div class="col">
+                <h2 class="mb-2">{{ user.nome_completo_rp }}</h2>
+                <p class="mb-3 opacity-75">
+                    <i class="fas fa-user me-2"></i>
+                    @{{ user.username }} • 
+                    <i class="fab fa-roblox me-2"></i>
+                    {{ user.roblox_username }} ({{ user.roblox_id }})
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="nivel-badge" style="background-color: {{ user.get_nivel_display_color }};">
+                        <i class="fas fa-star me-2"></i>
+                        {{ user.get_nivel_acesso_display }}
+                    </span>
+                    {% if user.discord_vinculado %}
+                        <span class="badge bg-success">
+                            <i class="fab fa-discord me-1"></i>
+                            Discord Vinculado
+                        </span>
+                    {% endif %}
+                    {% if user.verificado %}
+                        <span class="badge bg-info">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Verificado
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Coluna Principal -->
+        <div class="col-lg-8">
+            <!-- Informações Pessoais -->
+            <div class="card card-profile mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Informações Pessoais
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nome Completo (RP):</strong><br>{{ user.nome_completo_rp }}</p>
+                            <p><strong>Username:</strong><br>@{{ user.username }}</p>
+                            <p><strong>Nível de Acesso:</strong><br>
+                                <span class="badge" style="background-color: {{ user.get_nivel_display_color }};">
+                                    {{ user.get_nivel_acesso_display }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Roblox:</strong><br>{{ user.roblox_username }} ({{ user.roblox_id }})</p>
+                            <p><strong>Conta Verificada:</strong><br>
+                                {% if user.verificado %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>Verificada
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock me-1"></i>Pendente
+                                    </span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Membro desde:</strong><br>{{ user.date_joined|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if user.biografia %}
+                    <hr>
+                    <p><strong>Biografia:</strong></p>
+                    <p class="text-muted">{{ user.biografia }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Cargo Atual -->
+            {% if user.profile.cargo_atual %}
+            <div class="card card-profile mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-briefcase me-2"></i>
+                        Cargo Atual
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                            <span style="font-size: 1.5rem;">{{ user.profile.cargo_atual.get_simbolo_display_icon }}</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ user.profile.cargo_atual.nome }}</h6>
+                            <small class="text-muted">{{ user.profile.cargo_atual.entidade.nome }}</small>
+                        </div>
+                        <span class="badge 
+                            {% if user.profile.cargo_atual.simbolo_gestao == '**' %}bg-warning text-dark
+                            {% elif user.profile.cargo_atual.simbolo_gestao == '*' %}bg-success
+                            {% elif user.profile.cargo_atual.simbolo_gestao == '+' %}bg-info
+                            {% else %}bg-light text-dark
+                            {% endif %}">
+                            {% if user.profile.cargo_atual.simbolo_gestao != 'nenhum' %}
+                                {{ user.profile.cargo_atual.simbolo_gestao }}
+                            {% else %}
+                                Operacional
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted">Órgão:</small>
+                            <p class="mb-1">{{ user.profile.cargo_atual.entidade.orgao.nome }}</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Poder:</small>
+                            <p class="mb-1">{{ user.profile.cargo_atual.entidade.orgao.poder.nome }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if user.profile.cargo_atual.simbolo_gestao != 'nenhum' %}
+                    <div class="mt-3">
+                        <a href="{% url 'main:painel_gestao_cargos' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-users-cog me-2"></i>
+                            Painel de Gestão
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card card-profile mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Status no Governo
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">Sem cargo atual</h6>
+                    <p class="text-muted small">Você ainda não foi nomeado para nenhum cargo no governo.</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Ações Rápidas -->
+            <div class="card card-profile mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Ações da Conta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-primary btn-action w-100" id="btn-change-password">
+                                <i class="fas fa-key me-2"></i>
+                                Alterar Senha
+                            </button>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-warning btn-action w-100" id="btn-change-name">
+                                <i class="fas fa-edit me-2"></i>
+                                Solicitar Alteração de Nome
+                            </button>
+                        </div>
+                        {% if user.nivel_acesso == 'imigrante' %}
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-success btn-action w-100" id="btn-citizenship">
+                                <i class="fas fa-flag me-2"></i>
+                                Solicitar Cidadania
+                            </button>
+                        </div>
+                        {% endif %}
+                        {% if not user.discord_vinculado %}
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-info btn-action w-100" id="btn-link-discord">
+                                <i class="fab fa-discord me-2"></i>
+                                Vincular Discord
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Solicitações -->
+            {% if solicitacoes_nome %}
+            <div class="card card-profile mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Solicitações de Alteração de Nome
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for solicitacao in solicitacoes_nome %}
+                    <div class="timeline-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6>{{ solicitacao.nome_atual }} → {{ solicitacao.nome_solicitado }}</h6>
+                                <p class="text-muted mb-1">{{ solicitacao.motivo|truncatechars:100 }}</p>
+                                <small class="text-muted">{{ solicitacao.data_solicitacao|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <span class="badge status-{{ solicitacao.status }}">
+                                {{ solicitacao.get_status_display }}
+                            </span>
+                        </div>
+                        {% if solicitacao.observacoes_staff %}
+                        <div class="mt-2">
+                            <small><strong>Observações do Staff:</strong> {{ solicitacao.observacoes_staff }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if solicitacao_cidadania %}
+            <div class="card card-profile mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-flag me-2"></i>
+                        Solicitação de Cidadania
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6>Solicitação de Cidadania Brasileira</h6>
+                                <p class="text-muted mb-1">{{ solicitacao_cidadania.motivo|truncatechars:150 }}</p>
+                                <small class="text-muted">{{ solicitacao_cidadania.data_solicitacao|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <span class="badge status-{{ solicitacao_cidadania.status }}">
+                                {{ solicitacao_cidadania.get_status_display }}
+                            </span>
+                        </div>
+                        {% if solicitacao_cidadania.observacoes_staff %}
+                        <div class="mt-2">
+                            <small><strong>Observações do Staff:</strong> {{ solicitacao_cidadania.observacoes_staff }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Discord Status -->
+            {% if user.discord_vinculado %}
+            <div class="card card-profile mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fab fa-discord me-2"></i>
+                        Discord Vinculado
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if user.discord_avatar %}
+                            <img src="{{ user.get_discord_avatar_small }}" alt="Avatar Discord" class="rounded-circle me-3" width="48" height="48">
+                        {% else %}
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                <i class="fab fa-discord text-white"></i>
+                            </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ user.discord_display_name|default:user.discord_username }}</h6>
+                            {% if user.discord_display_name and user.discord_username %}
+                                <small class="text-muted">@{{ user.discord_username }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if user.discord_data_vinculacao %}
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            Vinculado em {{ user.discord_data_vinculacao|date:"d/m/Y H:i" }}
+                        </small>
+                    {% endif %}
+                    <div class="mt-3">
+                        <button class="btn btn-outline-danger btn-sm w-100" id="btn-unlink-discord">
+                            <i class="fas fa-unlink me-2"></i>
+                            Desvincular Discord
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Estatísticas -->
+            <div class="card card-profile mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Estatísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ logs_acesso|length }}</div>
+                        <div class="text-muted">Acessos Recentes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user.date_joined|timesince }}</div>
+                        <div class="text-muted">Tempo de Membro</div>
+                    </div>
+                    {% if user.data_ultimo_login %}
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user.data_ultimo_login|timesince }}</div>
+                        <div class="text-muted">Último Acesso</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Logs de Acesso -->
+            {% if logs_acesso %}
+            <div class="card card-profile">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Acessos Recentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for log in logs_acesso %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <small class="text-muted">{{ log.data_acesso|date:"d/m/Y H:i" }}</small><br>
+                            <small>{{ log.ip_address }}</small>
+                        </div>
+                        <span class="badge {% if log.sucesso %}bg-success{% else %}bg-danger{% endif %}">
+                            {% if log.sucesso %}
+                                <i class="fas fa-check"></i>
+                            {% else %}
+                                <i class="fas fa-times"></i>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if not forloop.last %}<hr class="my-2">{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modais -->
+{% include 'users/modals.html' %}
+
+<script>
+// Aguardar carregamento completo da página
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM carregado, configurando event listeners...');
+
+    // Event listeners para os botões dos modais
+    const btnChangePassword = document.getElementById('btn-change-password');
+    if (btnChangePassword) {
+        btnChangePassword.addEventListener('click', function() {
+            console.log('Botão alterar senha clicado');
+            const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+            modal.show();
+        });
+    }
+
+    const btnChangeName = document.getElementById('btn-change-name');
+    if (btnChangeName) {
+        btnChangeName.addEventListener('click', function() {
+            console.log('Botão alterar nome clicado');
+            const modal = new bootstrap.Modal(document.getElementById('changeNameModal'));
+            modal.show();
+        });
+    }
+
+    const btnCitizenship = document.getElementById('btn-citizenship');
+    if (btnCitizenship) {
+        btnCitizenship.addEventListener('click', function() {
+            console.log('Botão cidadania clicado');
+            const modal = new bootstrap.Modal(document.getElementById('citizenshipModal'));
+            modal.show();
+        });
+    }
+
+    const btnLinkDiscord = document.getElementById('btn-link-discord');
+    if (btnLinkDiscord) {
+        btnLinkDiscord.addEventListener('click', async function() {
+            console.log('Botão Discord clicado - iniciando OAuth');
+            
+            try {
+                const response = await fetch('/usuarios/api/iniciar-vinculacao-discord/', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Redirecionar para o Discord OAuth
+                    window.location.href = result.auth_url;
+                } else {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.error, 'error');
+                    } else {
+                        alert(result.error);
+                    }
+                }
+            } catch (error) {
+                if (window.NotificationManager) {
+                    NotificationManager.show('Erro de conexão', 'error');
+                } else {
+                    alert('Erro de conexão');
+                }
+            }
+        });
+    }
+
+    const btnUnlinkDiscord = document.getElementById('btn-unlink-discord');
+    if (btnUnlinkDiscord) {
+        btnUnlinkDiscord.addEventListener('click', async function() {
+            console.log('Botão desvincular Discord clicado');
+            
+            if (!confirm('Tem certeza que deseja desvincular sua conta do Discord?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/usuarios/api/desvincular-discord/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.message, 'success');
+                    } else {
+                        alert(result.message);
+                    }
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.error, 'error');
+                    } else {
+                        alert(result.error);
+                    }
+                }
+            } catch (error) {
+                if (window.NotificationManager) {
+                    NotificationManager.show('Erro de conexão', 'error');
+                } else {
+                    alert('Erro de conexão');
+                }
+            }
+        });
+    }
+
+    console.log('Event listeners configurados para os botões');
+
+    // Handlers dos formulários
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                senha_atual: formData.get('senha_atual'),
+                nova_senha: formData.get('nova_senha'),
+                confirmar_senha: formData.get('confirmar_senha')
+            };
+            
+            try {
+                const response = await fetch('/usuarios/api/alterar-senha/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.message, 'success');
+                    } else {
+                        alert(result.message);
+                    }
+                    bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                    e.target.reset();
+                } else {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.error, 'error');
+                    } else {
+                        alert(result.error);
+                    }
+                }
+            } catch (error) {
+                if (window.NotificationManager) {
+                    NotificationManager.show('Erro de conexão', 'error');
+                } else {
+                    alert('Erro de conexão');
+                }
+            }
+        });
+    }
+
+    const changeNameForm = document.getElementById('changeNameForm');
+    if (changeNameForm) {
+        changeNameForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                novo_nome: formData.get('novo_nome'),
+                motivo: formData.get('motivo')
+            };
+            
+            try {
+                const response = await fetch('/usuarios/api/solicitar-alteracao-nome/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.message, 'success');
+                    } else {
+                        alert(result.message);
+                    }
+                    bootstrap.Modal.getInstance(document.getElementById('changeNameModal')).hide();
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.error, 'error');
+                    } else {
+                        alert(result.error);
+                    }
+                }
+            } catch (error) {
+                if (window.NotificationManager) {
+                    NotificationManager.show('Erro de conexão', 'error');
+                } else {
+                    alert('Erro de conexão');
+                }
+            }
+        });
+    }
+
+    const citizenshipForm = document.getElementById('citizenshipForm');
+    if (citizenshipForm) {
+        citizenshipForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                motivo: formData.get('motivo')
+            };
+            
+            try {
+                const response = await fetch('/usuarios/api/solicitar-cidadania/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.message, 'success');
+                    } else {
+                        alert(result.message);
+                    }
+                    bootstrap.Modal.getInstance(document.getElementById('citizenshipModal')).hide();
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.error, 'error');
+                    } else {
+                        alert(result.error);
+                    }
+                }
+            } catch (error) {
+                if (window.NotificationManager) {
+                    NotificationManager.show('Erro de conexão', 'error');
+                } else {
+                    alert('Erro de conexão');
+                }
+            }
+        });
+    }
+
+    const linkDiscordForm = document.getElementById('linkDiscordForm');
+    if (linkDiscordForm) {
+        linkDiscordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                discord_username: formData.get('discord_username')
+            };
+            
+            try {
+                const response = await fetch('/usuarios/api/vincular-discord/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.message, 'success');
+                    } else {
+                        alert(result.message);
+                    }
+                    bootstrap.Modal.getInstance(document.getElementById('linkDiscordModal')).hide();
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    if (window.NotificationManager) {
+                        NotificationManager.show(result.error, 'error');
+                    } else {
+                        alert(result.error);
+                    }
+                }
+            } catch (error) {
+                if (window.NotificationManager) {
+                    NotificationManager.show('Erro de conexão', 'error');
+                } else {
+                    alert('Erro de conexão');
+                }
+            }
+        });
+    }
+
+}); // Fim do DOMContentLoaded
+</script>
+{% endblock %} 

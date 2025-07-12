@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Painel de Gestão de Cargos - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cargo-atual-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .usuario-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .usuario-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .cargo-badge {
+        font-size: 0.8rem;
+    }
+    
+    .simbolo-icon {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+    
+    .action-buttons {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .usuario-card:hover .action-buttons {
+        opacity: 1;
+    }
+    
+    .stats-mini {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">👑 Painel de Gestão de Cargos</h1>
+                    <p class="text-muted mb-0">Gerencie nomeações e exonerações</p>
+                </div>
+                <div>
+                    <a href="{% url 'main:gestao_cidadania' %}" class="btn btn-outline-success me-2">
+                        <i class="fas fa-flag"></i> Gestão de Cidadania
+                    </a>
+                    <a href="{% url 'main:estrutura_governo' %}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-sitemap"></i> Ver Estrutura
+                    </a>
+                    <a href="{% url 'main:home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cargo Atual -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card cargo-atual-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="mb-1">
+                                <span class="simbolo-icon">{{ cargo_atual.get_simbolo_display_icon }}</span>
+                                {{ cargo_atual.nome }}
+                            </h4>
+                            <p class="mb-0">
+                                {{ cargo_atual.entidade.nome }} - {{ cargo_atual.entidade.orgao.nome }}
+                                <br>
+                                <small>{{ cargo_atual.entidade.orgao.poder.nome }}</small>
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-mini text-center">
+                                <h5 class="mb-0">{{ cargos_gerenciaveis.count }}</h5>
+                                <small>Cargos Gerenciáveis</small>
+                            </div>
+                            <div class="stats-mini text-center">
+                                <h5 class="mb-0">{{ usuarios_gerenciaveis.count }}</h5>
+                                <small>Usuários Subordinados</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="row">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="gestaoTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="subordinados-tab" data-bs-toggle="tab" data-bs-target="#subordinados" type="button" role="tab">
+                        <i class="fas fa-users"></i> Usuários Subordinados ({{ usuarios_gerenciaveis.count }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sem-cargo-tab" data-bs-toggle="tab" data-bs-target="#sem-cargo" type="button" role="tab">
+                        <i class="fas fa-user-plus"></i> Usuários Sem Cargo ({{ usuarios_sem_cargo.count }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="historico-tab" data-bs-toggle="tab" data-bs-target="#historico" type="button" role="tab">
+                        <i class="fas fa-history"></i> Histórico de Nomeações
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="gestaoTabsContent">
+        <!-- Usuários Subordinados -->
+        <div class="tab-pane fade show active" id="subordinados" role="tabpanel">
+            <div class="row mt-3">
+                {% for usuario in usuarios_gerenciaveis %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card usuario-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <img src="{{ usuario.get_avatar_url }}" alt="Avatar" class="rounded-circle me-3" width="50" height="50">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">{{ usuario.nome_completo_rp }}</h6>
+                                    <small class="text-muted">@{{ usuario.username }}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <span class="badge cargo-badge 
+                                    {% if usuario.profile.cargo_atual.simbolo_gestao == '**' %}bg-warning text-dark
+                                    {% elif usuario.profile.cargo_atual.simbolo_gestao == '*' %}bg-success
+                                    {% elif usuario.profile.cargo_atual.simbolo_gestao == '+' %}bg-info
+                                    {% else %}bg-light text-dark
+                                    {% endif %}">
+                                    <span class="simbolo-icon">{{ usuario.profile.cargo_atual.get_simbolo_display_icon }}</span>
+                                    {{ usuario.profile.cargo_atual.nome }}
+                                </span>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-warning" onclick="promoverUsuario({{ usuario.id }}, '{{ usuario.nome_completo_rp }}', '{{ usuario.profile.cargo_atual.nome }}', {{ usuario.profile.cargo_atual.entidade.id }})">
+                                    <i class="fas fa-arrow-up"></i> Promover
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="exonerarUsuario({{ usuario.id }}, '{{ usuario.nome_completo_rp }}', '{{ usuario.profile.cargo_atual.nome }}')">
+                                    <i class="fas fa-user-minus"></i> Exonerar
+                                </button>
+                                <a href="{% url 'main:perfil_publico' usuario.username %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Ver Perfil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Nenhum usuário subordinado encontrado.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Usuários Sem Cargo -->
+        <div class="tab-pane fade" id="sem-cargo" role="tabpanel">
+            <div class="row mt-3">
+                {% for usuario in usuarios_sem_cargo %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card usuario-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <img src="{{ usuario.get_avatar_url }}" alt="Avatar" class="rounded-circle me-3" width="50" height="50">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">{{ usuario.nome_completo_rp }}</h6>
+                                    <small class="text-muted">@{{ usuario.username }}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <span class="badge bg-secondary">Sem cargo</span>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-success" onclick="nomearUsuario({{ usuario.id }}, '{{ usuario.nome_completo_rp }}')">
+                                    <i class="fas fa-user-plus"></i> Nomear
+                                </button>
+                                <a href="{% url 'main:perfil_publico' usuario.username %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Ver Perfil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Todos os usuários já possuem cargos.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="tab-pane fade" id="historico" role="tabpanel">
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Últimas Nomeações Realizadas</h5>
+                            {% for nomeacao in nomeacoes_realizadas %}
+                            <div class="d-flex align-items-center py-2 border-bottom">
+                                <div class="flex-grow-1">
+                                    <strong>{{ nomeacao.usuario.nome_completo_rp }}</strong>
+                                    nomeado(a) para <strong>{{ nomeacao.cargo.nome }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ nomeacao.data_inicio|date:"d/m/Y H:i" }}
+                                        {% if nomeacao.observacoes %} - {{ nomeacao.observacoes }}{% endif %}
+                                    </small>
+                                </div>
+                                <div>
+                                    {% if nomeacao.is_atual %}
+                                        <span class="badge bg-success">Atual</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Finalizado</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted">Nenhuma nomeação realizada ainda.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Nomeação -->
+<div class="modal fade" id="modalNomeacao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">👑 Nomear Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formNomeacao">
+                    <input type="hidden" id="usuarioIdNomeacao">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Usuário Selecionado</label>
+                        <div class="alert alert-info">
+                            <strong id="nomeUsuarioNomeacao"></strong>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cargoSelect" class="form-label">Cargo</label>
+                        <select class="form-select" id="cargoSelect" required>
+                            <option value="">Selecione um cargo...</option>
+                            {% for cargo in cargos_gerenciaveis %}
+                            <option value="{{ cargo.id }}">
+                                {{ cargo.get_simbolo_display_icon }} {{ cargo.nome }} - {{ cargo.entidade.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="observacoesNomeacao" class="form-label">Observações (opcional)</label>
+                        <textarea class="form-control" id="observacoesNomeacao" rows="3" placeholder="Motivo da nomeação, instruções especiais, etc."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="confirmarNomeacao()">
+                    <i class="fas fa-user-plus"></i> Confirmar Nomeação
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Promoção -->
+<div class="modal fade" id="modalPromocao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">⬆️ Promover Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formPromocao">
+                    <input type="hidden" id="usuarioIdPromocao">
+                    <input type="hidden" id="entidadeIdPromocao">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Usuário Selecionado</label>
+                        <div class="alert alert-info">
+                            <strong id="nomeUsuarioPromocao"></strong>
+                            <br>
+                            <small>Cargo atual: <span id="cargoAtualPromocao"></span></small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cargoPromocaoSelect" class="form-label">Novo Cargo na Mesma Entidade</label>
+                        <select class="form-select" id="cargoPromocaoSelect" required>
+                            <option value="">Carregando cargos...</option>
+                        </select>
+                        <div class="form-text">
+                            Apenas cargos da mesma entidade/órgão são exibidos para promoção.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="observacoesPromocao" class="form-label">Observações</label>
+                        <textarea class="form-control" id="observacoesPromocao" rows="3" placeholder="Motivo da promoção, reconhecimento, etc."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="confirmarPromocao()">
+                    <i class="fas fa-arrow-up"></i> Confirmar Promoção
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Exoneração -->
+<div class="modal fade" id="modalExoneracao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">⚠️ Exonerar Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formExoneracao">
+                    <input type="hidden" id="usuarioIdExoneracao">
+                    
+                    <div class="mb-3">
+                        <div class="alert alert-warning">
+                            <strong>Atenção!</strong> Você está prestes a exonerar:
+                            <br>
+                            <strong id="nomeUsuarioExoneracao"></strong> do cargo de <strong id="cargoUsuarioExoneracao"></strong>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="observacoesExoneracao" class="form-label">Motivo da Exoneração</label>
+                        <textarea class="form-control" id="observacoesExoneracao" rows="3" placeholder="Descreva o motivo da exoneração..." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarExoneracao()">
+                    <i class="fas fa-user-minus"></i> Confirmar Exoneração
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

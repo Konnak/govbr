@@ -1,0 +1,68 @@
+# Banco de dados SQLite
+*.sqlite3
+db.sqlite3
+
+# Arquivos de mídia
+media/
+
+# Arquivos estáticos coletados
+staticfiles/
+
+# Logs
+*.log
+logs/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ambientes virtuais
+venv/
+env/
+ENV/
+
+# Configurações do IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.production
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# Arquivos de backup
+*.bak
+*.orig
+
+# PDFs pessoais (manter apenas exemplos se necessário)
+Processo_*.pdf
+
+# Dependências
+node_modules/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Pytest
+.pytest_cache/
+
+# Migrations (opcional - remova se quiser versionar)
+# */migrations/
+
+# Arquivos de configuração específicos
+local_settings.py 
