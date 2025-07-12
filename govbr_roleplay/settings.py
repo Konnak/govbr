@@ -244,49 +244,5 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
 # CELERY_TASK_TIME_LIMIT = 30 * 60
 # CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-# Configurações de Logging - Versão simplificada para compatibilidade total
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '[{levelname}] {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '[{levelname}] {asctime} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-    },
-    'loggers': {
-        'diario_oficial': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'users.views': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'autenticacao': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-        },
-        'root': {
-            'handlers': ['console'],
-            'level': 'WARNING',
-        },
-    },
-}
+# Configurações de Logging - DESABILITADO para resolver problema do DisCloud
+# LOGGING desabilitado temporariamente para evitar conflitos de cache no DisCloud
