@@ -30,7 +30,20 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-67*9w)ie$3$6%ieh7fgc2u5&#!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,*.discloud.app,gov.discloud.app').split(',')
+# ALLOWED_HOSTS com configuração robusta para DisCloud
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = allowed_hosts_env.split(',')
+
+# Adicionar hosts específicos do DisCloud
+ALLOWED_HOSTS.extend([
+    'gov.discloud.app',
+    'gov-fixed.discloud.app', 
+    '.discloud.app',
+    '*'  # Temporário para debug no DisCloud
+])
+
+# Debug temporário para verificar ALLOWED_HOSTS
+print(f"🔧 DEBUG: ALLOWED_HOSTS = {ALLOWED_HOSTS}")
 
 
 # Application definition
