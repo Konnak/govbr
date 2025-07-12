@@ -1,17 +1,3 @@
-# Banco de dados SQLite
-*.sqlite3
-db.sqlite3
-
-# Arquivos de mídia
-media/
-
-# Arquivos estáticos coletados
-staticfiles/
-
-# Logs
-*.log
-logs/
-
 # Cache Python
 __pycache__/
 *.py[cod]
@@ -46,9 +32,6 @@ Thumbs.db
 *.bak
 *.orig
 
-# PDFs pessoais (manter apenas exemplos se necessário)
-Processo_*.pdf
-
 # Dependências
 node_modules/
 
@@ -61,8 +44,8 @@ coverage.xml
 # Pytest
 .pytest_cache/
 
-# Migrations (opcional - remova se quiser versionar)
-# */migrations/
-
 # Arquivos de configuração específicos
-local_settings.py 
+local_settings.py
+
+# Logs opcionais (pode gerar dinamicamente)
+*.log 
