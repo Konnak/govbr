@@ -364,7 +364,7 @@ def nomear_usuario(request):
 def promover_usuario(request):
     """API para promover usuário (alterar cargo dentro da mesma entidade)"""
     import logging
-    logger = logging.getLogger('diario_oficial')
+    logger = logging.getLogger(__name__)
     
     try:
         data = json.loads(request.body)
@@ -539,7 +539,7 @@ def promover_usuario(request):
 def exonerar_usuario(request):
     """API para exonerar usuário de um cargo"""
     import logging
-    logger = logging.getLogger('diario_oficial')
+    logger = logging.getLogger(__name__)
     
     try:
         data = json.loads(request.body)

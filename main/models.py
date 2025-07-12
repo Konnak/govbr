@@ -7,8 +7,8 @@ import logging
 
 User = get_user_model()
 
-# Configurar logger específico para o diário oficial
-logger = logging.getLogger('diario_oficial')
+# Configurar logger
+logger = logging.getLogger(__name__)
 
 
 class Noticia(models.Model):
