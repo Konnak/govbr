@@ -244,35 +244,7 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
 # CELERY_TASK_TIME_LIMIT = 30 * 60
 # CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-# Configurações de Logging
-# Criar diretório de logs se não existir
-logs_dir = BASE_DIR / 'logs'
-logs_dir.mkdir(exist_ok=True)
-
-# Configurar handlers baseado no ambiente
-handlers_config = {
-    'console': {
-        'class': 'logging.StreamHandler',
-        'formatter': 'simple',
-    },
-}
-
-# Adicionar handler de arquivo apenas se conseguir criar o diretório
-try:
-    if logs_dir.exists() and logs_dir.is_dir():
-        handlers_config['file'] = {
-            'class': 'logging.FileHandler',
-            'filename': logs_dir / 'diario_oficial.log',
-            'formatter': 'verbose',
-            'encoding': 'utf-8',
-        }
-        logger_handlers = ['console', 'file']
-    else:
-        logger_handlers = ['console']
-except Exception:
-    # Se houver qualquer problema, usar apenas console
-    logger_handlers = ['console']
-
+# Configurações de Logging - Versão simplificada para compatibilidade total
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -286,26 +258,35 @@ LOGGING = {
             'style': '{',
         },
     },
-    'handlers': handlers_config,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
     'loggers': {
         'diario_oficial': {
-            'handlers': logger_handlers,
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
         'users.views': {
-            'handlers': logger_handlers,
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
         'autenticacao': {
-            'handlers': logger_handlers,
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
         'django': {
             'handlers': ['console'],
             'level': 'INFO',
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'WARNING',
         },
     },
 }
